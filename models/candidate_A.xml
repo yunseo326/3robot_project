@@ -1,0 +1,119 @@
+<!--
+STAGE 1 서브스테이지 1-A1, 후보 A: 발목 없음 + 롤오버 밑창.
+
+치수 출처: logs/progress.md STAGE 0 절대 크기 (2026-08-10 확정, 임시값).
+전체 높이 40cm / 머리 18cm / 몸통 11cm / 다리(허벅지+종아리) 11cm / 다리 두께 2.75cm /
+발 3.85x2.7x0.5cm. 팔·목·머리는 관절 없이 몸통에 고정된 질량 전용 지오메트리다
+(CLAUDE.md STAGE 1 규칙: "팔·목·LCD 머리는 전부 질량만 있는 고정 링크로 둔다").
+
+hip(yaw+roll+pitch, 3축) + knee(1축)는 1-A1의 표준 구성으로 고정, 발목 유무만
+후보 A/B가 다르다 (robot_spec.md §4-A).
+
+롤오버 밑창: 시상면(x-z) 곡률 반경 R=0.03m (다리 길이 0.11m의 1/4~1/3 범위 안,
+robot_spec.md §4-A1 출발값), 관상면(y)은 캡슐을 y축으로 눕혀 평평하게 유지한다
+(§4-A1 "좌우: 평평 유지" 요구사항). 앞·중앙·뒤 3개 캡슐로 곡선을 근사한다
+(z_arc(x) = R - sqrt(R^2 - x^2), x=0/±0.015에서 계산).
+-->
+<mujoco model="candidate_A_no_ankle_rollover">
+  <compiler angle="radian" autolimits="true"/>
+  <option timestep="0.004" gravity="0 0 -9.81"/>
+
+  <default>
+    <joint type="hinge" damping="0.3" armature="0.001"/>
+    <position kp="12" ctrlrange="-3.1416 3.1416"/>
+    <geom contype="0" conaffinity="0" friction="0.9 0.02 0.01"/>
+    <default class="foot_collision">
+      <geom contype="1" conaffinity="1"/>
+    </default>
+  </default>
+
+  <worldbody>
+    <light pos="0 0 2" dir="0 0 -1" diffuse="1 1 1"/>
+    <geom name="floor" type="plane" size="0 0 0.01" contype="1" conaffinity="0" rgba="0.8 0.8 0.8 1"/>
+
+    <body name="body_link" pos="0 0 0.17">
+      <freejoint/>
+      <site name="imu" pos="0 0 0"/>
+      <geom name="torso_geom" type="box" size="0.03 0.04 0.055" mass="0.53" rgba="0.3 0.3 0.35 1"/>
+      <geom name="head_geom" type="box" pos="0 0 0.145" size="0.05 0.07 0.09" mass="0.45" rgba="0.2 0.6 0.9 1"/>
+      <geom name="l_arm_geom" type="box" pos="0 0.06 0.02" size="0.01 0.01 0.03" mass="0.03" rgba="0.3 0.3 0.35 1"/>
+      <geom name="r_arm_geom" type="box" pos="0 -0.06 0.02" size="0.01 0.01 0.03" mass="0.03" rgba="0.3 0.3 0.35 1"/>
+
+      <!-- 왼쪽 다리 -->
+      <body name="l_hip_yaw_link" pos="0 0.04 -0.055">
+        <joint name="l_hip_yaw" axis="0 0 1" range="-0.5236 0.5236"/>
+        <geom type="sphere" size="0.008" mass="0.02" rgba="0.5 0.5 0.5 1"/>
+        <body name="l_hip_roll_link">
+          <joint name="l_hip_roll" axis="1 0 0" range="-0.5236 0.5236"/>
+          <geom type="sphere" size="0.008" mass="0.03" rgba="0.5 0.5 0.5 1"/>
+          <body name="l_hip_pitch_link">
+            <joint name="l_hip_pitch" axis="0 1 0" range="-1.5708 0.7854"/>
+            <geom name="l_thigh_geom" type="capsule" fromto="0 0 0 0 0 -0.055" size="0.01375" mass="0.08" rgba="0.35 0.35 0.4 1"/>
+            <body name="l_knee_link" pos="0 0 -0.055">
+              <joint name="l_knee" axis="0 1 0" range="-0.1745 2.0944"/>
+              <geom name="l_shank_geom" type="capsule" fromto="0 0 0 0 0 -0.055" size="0.01375" mass="0.06" rgba="0.35 0.35 0.4 1"/>
+              <body name="l_foot_link" pos="0 0 -0.055">
+                <geom class="foot_collision" name="l_foot_heel" type="capsule" pos="-0.015 0 0.002" axisangle="1 0 0 1.5708" size="0.003 0.0135" mass="0.013" rgba="0.15 0.15 0.15 1"/>
+                <geom class="foot_collision" name="l_foot_mid"  type="capsule" pos="0 0 -0.002" axisangle="1 0 0 1.5708" size="0.003 0.0135" mass="0.014" rgba="0.15 0.15 0.15 1"/>
+                <geom class="foot_collision" name="l_foot_toe"  type="capsule" pos="0.015 0 0.002" axisangle="1 0 0 1.5708" size="0.003 0.0135" mass="0.013" rgba="0.15 0.15 0.15 1"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+
+      <!-- 오른쪽 다리 (좌우 대칭) -->
+      <body name="r_hip_yaw_link" pos="0 -0.04 -0.055">
+        <joint name="r_hip_yaw" axis="0 0 1" range="-0.5236 0.5236"/>
+        <geom type="sphere" size="0.008" mass="0.02" rgba="0.5 0.5 0.5 1"/>
+        <body name="r_hip_roll_link">
+          <joint name="r_hip_roll" axis="1 0 0" range="-0.5236 0.5236"/>
+          <geom type="sphere" size="0.008" mass="0.03" rgba="0.5 0.5 0.5 1"/>
+          <body name="r_hip_pitch_link">
+            <joint name="r_hip_pitch" axis="0 1 0" range="-1.5708 0.7854"/>
+            <geom name="r_thigh_geom" type="capsule" fromto="0 0 0 0 0 -0.055" size="0.01375" mass="0.08" rgba="0.35 0.35 0.4 1"/>
+            <body name="r_knee_link" pos="0 0 -0.055">
+              <joint name="r_knee" axis="0 1 0" range="-0.1745 2.0944"/>
+              <geom name="r_shank_geom" type="capsule" fromto="0 0 0 0 0 -0.055" size="0.01375" mass="0.06" rgba="0.35 0.35 0.4 1"/>
+              <body name="r_foot_link" pos="0 0 -0.055">
+                <geom class="foot_collision" name="r_foot_heel" type="capsule" pos="-0.015 0 0.002" axisangle="1 0 0 1.5708" size="0.003 0.0135" mass="0.013" rgba="0.15 0.15 0.15 1"/>
+                <geom class="foot_collision" name="r_foot_mid"  type="capsule" pos="0 0 -0.002" axisangle="1 0 0 1.5708" size="0.003 0.0135" mass="0.014" rgba="0.15 0.15 0.15 1"/>
+                <geom class="foot_collision" name="r_foot_toe"  type="capsule" pos="0.015 0 0.002" axisangle="1 0 0 1.5708" size="0.003 0.0135" mass="0.013" rgba="0.15 0.15 0.15 1"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <position name="l_hip_yaw_act" joint="l_hip_yaw"/>
+    <position name="l_hip_roll_act" joint="l_hip_roll"/>
+    <position name="l_hip_pitch_act" joint="l_hip_pitch"/>
+    <position name="l_knee_act" joint="l_knee"/>
+    <position name="r_hip_yaw_act" joint="r_hip_yaw"/>
+    <position name="r_hip_roll_act" joint="r_hip_roll"/>
+    <position name="r_hip_pitch_act" joint="r_hip_pitch"/>
+    <position name="r_knee_act" joint="r_knee"/>
+  </actuator>
+
+  <sensor>
+    <gyro site="imu" name="gyro"/>
+    <velocimeter site="imu" name="local_linvel"/>
+    <accelerometer site="imu" name="accelerometer"/>
+    <framezaxis objtype="site" objname="imu" name="upvector"/>
+    <framelinvel objtype="site" objname="imu" name="global_linvel"/>
+    <frameangvel objtype="site" objname="imu" name="global_angvel"/>
+    <framepos objtype="site" objname="imu" name="position"/>
+  </sensor>
+
+  <keyframe>
+    <!-- 편 다리 자세 유지 (STAGE 0 검증 통과: 2초 PD hold 안정). 무릎 관절 한계를
+         -0.1745(여유 0.1 이상)까지 넓혀뒀으므로 knee=0 기본값은 이제 경계가
+         아니라 여유를 두고 안쪽에 있다 — CBF 페널티 문제는 이걸로 충분히
+         해결되고, 자세 자체를 구부릴 필요는 없었다 (구부려봤다가 하체 수평
+         오프셋 때문에 오히려 더 불안정해져서 되돌림). -->
+    <key name="stand" qpos="0 0 0.17 1 0 0 0  0 0 0 0  0 0 0 0"/>
+  </keyframe>
+</mujoco>

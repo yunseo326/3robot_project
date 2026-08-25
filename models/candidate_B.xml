@@ -1,0 +1,112 @@
+<!--
+STAGE 1 서브스테이지 1-A1, 후보 B: 발목 pitch 관절 추가 (ankle roll 없음).
+
+치수·질량 배분은 candidate_A.xml과 동일 (logs/progress.md STAGE 0 절대 크기 기준).
+hip(yaw+roll+pitch, 3축) + knee(1축)까지는 후보 A와 완전히 동일하게 고정하고,
+발목/발 부분만 다르다: 발목 pitch 관절 하나를 추가하고, 밑창은 평면 + 모서리만
+챔퍼(작은 반경 캡슐로 앞뒤 가장자리만 둥글림, robot_spec.md §4-A1 "후보 B 상세").
+-->
+<mujoco model="candidate_B_ankle_pitch">
+  <compiler angle="radian" autolimits="true"/>
+  <option timestep="0.004" gravity="0 0 -9.81"/>
+
+  <default>
+    <joint type="hinge" damping="0.3" armature="0.001"/>
+    <position kp="12" ctrlrange="-3.1416 3.1416"/>
+    <geom contype="0" conaffinity="0" friction="0.9 0.02 0.01"/>
+    <default class="foot_collision">
+      <geom contype="1" conaffinity="1"/>
+    </default>
+  </default>
+
+  <worldbody>
+    <light pos="0 0 2" dir="0 0 -1" diffuse="1 1 1"/>
+    <geom name="floor" type="plane" size="0 0 0.01" contype="1" conaffinity="0" rgba="0.8 0.8 0.8 1"/>
+
+    <body name="body_link" pos="0 0 0.17">
+      <freejoint/>
+      <site name="imu" pos="0 0 0"/>
+      <geom name="torso_geom" type="box" size="0.03 0.04 0.055" mass="0.53" rgba="0.3 0.3 0.35 1"/>
+      <geom name="head_geom" type="box" pos="0 0 0.145" size="0.05 0.07 0.09" mass="0.45" rgba="0.2 0.6 0.9 1"/>
+      <geom name="l_arm_geom" type="box" pos="0 0.06 0.02" size="0.01 0.01 0.03" mass="0.03" rgba="0.3 0.3 0.35 1"/>
+      <geom name="r_arm_geom" type="box" pos="0 -0.06 0.02" size="0.01 0.01 0.03" mass="0.03" rgba="0.3 0.3 0.35 1"/>
+
+      <!-- 왼쪽 다리 -->
+      <body name="l_hip_yaw_link" pos="0 0.04 -0.055">
+        <joint name="l_hip_yaw" axis="0 0 1" range="-0.5236 0.5236"/>
+        <geom type="sphere" size="0.008" mass="0.02" rgba="0.5 0.5 0.5 1"/>
+        <body name="l_hip_roll_link">
+          <joint name="l_hip_roll" axis="1 0 0" range="-0.5236 0.5236"/>
+          <geom type="sphere" size="0.008" mass="0.03" rgba="0.5 0.5 0.5 1"/>
+          <body name="l_hip_pitch_link">
+            <joint name="l_hip_pitch" axis="0 1 0" range="-1.5708 0.7854"/>
+            <geom name="l_thigh_geom" type="capsule" fromto="0 0 0 0 0 -0.055" size="0.01375" mass="0.08" rgba="0.35 0.35 0.4 1"/>
+            <body name="l_knee_link" pos="0 0 -0.055">
+              <joint name="l_knee" axis="0 1 0" range="-0.1745 2.0944"/>
+              <geom name="l_shank_geom" type="capsule" fromto="0 0 0 0 0 -0.055" size="0.01375" mass="0.06" rgba="0.35 0.35 0.4 1"/>
+              <body name="l_ank_pitch_link" pos="0 0 -0.055">
+                <joint name="l_ank_pitch" axis="0 1 0" range="-0.5236 0.5236"/>
+                <geom class="foot_collision" name="l_foot_sole" type="box" pos="0 0 -0.0025" size="0.01925 0.0135 0.0025" mass="0.035" rgba="0.15 0.15 0.15 1"/>
+                <geom class="foot_collision" name="l_foot_heel_chamfer" type="capsule" pos="-0.01925 0 -0.002" axisangle="1 0 0 1.5708" size="0.0015 0.0135" mass="0.0025" rgba="0.15 0.15 0.15 1"/>
+                <geom class="foot_collision" name="l_foot_toe_chamfer" type="capsule" pos="0.01925 0 -0.002" axisangle="1 0 0 1.5708" size="0.0015 0.0135" mass="0.0025" rgba="0.15 0.15 0.15 1"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+
+      <!-- 오른쪽 다리 (좌우 대칭) -->
+      <body name="r_hip_yaw_link" pos="0 -0.04 -0.055">
+        <joint name="r_hip_yaw" axis="0 0 1" range="-0.5236 0.5236"/>
+        <geom type="sphere" size="0.008" mass="0.02" rgba="0.5 0.5 0.5 1"/>
+        <body name="r_hip_roll_link">
+          <joint name="r_hip_roll" axis="1 0 0" range="-0.5236 0.5236"/>
+          <geom type="sphere" size="0.008" mass="0.03" rgba="0.5 0.5 0.5 1"/>
+          <body name="r_hip_pitch_link">
+            <joint name="r_hip_pitch" axis="0 1 0" range="-1.5708 0.7854"/>
+            <geom name="r_thigh_geom" type="capsule" fromto="0 0 0 0 0 -0.055" size="0.01375" mass="0.08" rgba="0.35 0.35 0.4 1"/>
+            <body name="r_knee_link" pos="0 0 -0.055">
+              <joint name="r_knee" axis="0 1 0" range="-0.1745 2.0944"/>
+              <geom name="r_shank_geom" type="capsule" fromto="0 0 0 0 0 -0.055" size="0.01375" mass="0.06" rgba="0.35 0.35 0.4 1"/>
+              <body name="r_ank_pitch_link" pos="0 0 -0.055">
+                <joint name="r_ank_pitch" axis="0 1 0" range="-0.5236 0.5236"/>
+                <geom class="foot_collision" name="r_foot_sole" type="box" pos="0 0 -0.0025" size="0.01925 0.0135 0.0025" mass="0.035" rgba="0.15 0.15 0.15 1"/>
+                <geom class="foot_collision" name="r_foot_heel_chamfer" type="capsule" pos="-0.01925 0 -0.002" axisangle="1 0 0 1.5708" size="0.0015 0.0135" mass="0.0025" rgba="0.15 0.15 0.15 1"/>
+                <geom class="foot_collision" name="r_foot_toe_chamfer" type="capsule" pos="0.01925 0 -0.002" axisangle="1 0 0 1.5708" size="0.0015 0.0135" mass="0.0025" rgba="0.15 0.15 0.15 1"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <position name="l_hip_yaw_act" joint="l_hip_yaw"/>
+    <position name="l_hip_roll_act" joint="l_hip_roll"/>
+    <position name="l_hip_pitch_act" joint="l_hip_pitch"/>
+    <position name="l_knee_act" joint="l_knee"/>
+    <position name="l_ank_pitch_act" joint="l_ank_pitch"/>
+    <position name="r_hip_yaw_act" joint="r_hip_yaw"/>
+    <position name="r_hip_roll_act" joint="r_hip_roll"/>
+    <position name="r_hip_pitch_act" joint="r_hip_pitch"/>
+    <position name="r_knee_act" joint="r_knee"/>
+    <position name="r_ank_pitch_act" joint="r_ank_pitch"/>
+  </actuator>
+
+  <sensor>
+    <gyro site="imu" name="gyro"/>
+    <velocimeter site="imu" name="local_linvel"/>
+    <accelerometer site="imu" name="accelerometer"/>
+    <framezaxis objtype="site" objname="imu" name="upvector"/>
+    <framelinvel objtype="site" objname="imu" name="global_linvel"/>
+    <frameangvel objtype="site" objname="imu" name="global_angvel"/>
+    <framepos objtype="site" objname="imu" name="position"/>
+  </sensor>
+
+  <keyframe>
+    <!-- 편 다리 자세 유지 (candidate_A.xml과 동일한 이유 — 관절 범위 확장만으로
+         충분하고, 자세를 구부릴 필요는 없었다). -->
+    <key name="stand" qpos="0 0 0.17 1 0 0 0  0 0 0 0 0  0 0 0 0 0"/>
+  </keyframe>
+</mujoco>
