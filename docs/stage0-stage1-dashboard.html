@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3robot_project — 진행 대시보드</title>
+<style>
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12161a;
+      --surface: #1b2126;
+      --surface-raised: #212933;
+      --text: #e7ecee;
+      --text-muted: #93a0a8;
+      --accent: #3fe6d1;
+      --accent-soft: #16302e;
+      --accent-strong: #7ff5e4;
+      --border: #2b333a;
+      --ok: #4fbf7f;
+      --ok-soft: #16301f;
+      --warn: #e0ab3f;
+      --warn-soft: #332a12;
+      --bad: #e0693f;
+      --bad-soft: #331b12;
+      --pending: #6b7680;
+      --pending-soft: #232a30;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12161a; --surface: #1b2126; --surface-raised: #212933;
+    --text: #e7ecee; --text-muted: #93a0a8;
+    --accent: #3fe6d1; --accent-soft: #16302e; --accent-strong: #7ff5e4;
+    --border: #2b333a;
+    --ok: #4fbf7f; --ok-soft: #16301f;
+    --warn: #e0ab3f; --warn-soft: #332a12;
+    --bad: #e0693f; --bad-soft: #331b12;
+    --pending: #6b7680; --pending-soft: #232a30;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  :root {
+    --bg: #edf1f2; --surface: #ffffff; --surface-raised: #f5f8f8;
+    --text: #14181c; --text-muted: #5b6670;
+    --accent: #0e9c8c; --accent-soft: #d3efec; --accent-strong: #0b7d70;
+    --border: #d7dee0;
+    --ok: #2f9e5b; --ok-soft: #e2f3e8;
+    --warn: #b3780f; --warn-soft: #f7ecd8;
+    --bad: #c14a1f; --bad-soft: #fbe8e0;
+    --pending: #8b959c; --pending-soft: #eaedef;
+    --shadow: 0 1px 2px rgba(20,24,28,0.04), 0 8px 24px rgba(20,24,28,0.06);
+    --font-display: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, "D2Coding", monospace;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-display); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 40px 24px 80px; display: flex; flex-direction: column; gap: 28px; }
+
+  .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+  .head h1 { font-size: 1.5rem; margin: 0 0 4px; letter-spacing: -0.01em; text-wrap: balance; }
+  .head .sub { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); }
+  .updated { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); text-align: right; }
+
+  .pipeline { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .stage-node { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 8px; text-align: center; box-shadow: var(--shadow); }
+  .stage-node .n { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .stage-node .label { font-size: 0.74rem; margin-top: 4px; font-weight: 600; }
+  .stage-node[data-state="done"] { border-color: var(--ok); background: var(--ok-soft); }
+  .stage-node[data-state="active"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: var(--shadow), 0 0 0 1px var(--accent); }
+  .stage-node[data-state="pending"] { opacity: 0.6; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px; }
+  .card > h2 { font-size: 1.05rem; margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .card > h3 { font-size: 0.92rem; margin: 4px 0 0; color: var(--text); }
+  .pill { font-family: var(--font-mono); font-size: 0.68rem; padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .pill.bad { background: var(--bad-soft); color: var(--bad); }
+  .pill.pending { background: var(--pending-soft); color: var(--pending); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+  td.num, .tnum { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .table-scroll { overflow-x: auto; }
+
+  .frames { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .frame { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--surface-raised); }
+  .frame img { display: block; width: 100%; height: auto; }
+  .frame .cap { font-family: var(--font-mono); font-size: 0.66rem; color: var(--text-muted); padding: 6px 8px; border-top: 1px solid var(--border); }
+
+  .note { font-size: 0.85rem; color: var(--text-muted); background: var(--surface-raised); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .note.warn-tone { border-color: var(--warn); background: var(--warn-soft); color: var(--text); }
+  .note code, .card code { font-family: var(--font-mono); font-size: 0.85em; background: var(--accent-soft); color: var(--accent-strong); padding: 1px 5px; border-radius: 4px; }
+
+  ul.checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  ul.checklist li { display: flex; align-items: baseline; gap: 8px; font-size: 0.88rem; }
+  ul.checklist .mark { font-family: var(--font-mono); width: 16px; flex-shrink: 0; }
+  ul.checklist li[data-state="done"] .mark { color: var(--ok); }
+  ul.checklist li[data-state="active"] .mark { color: var(--accent); }
+  ul.checklist li[data-state="pending"] .mark { color: var(--pending); }
+  ul.checklist li[data-state="pending"] { color: var(--text-muted); }
+
+  .sparkrow { display: flex; align-items: flex-end; gap: 3px; height: 44px; }
+  .sparkrow .bar { flex: 1; background: var(--accent); border-radius: 2px 2px 0 0; opacity: 0.85; position: relative; }
+  .sparkrow .bar.peak { background: var(--ok); opacity: 1; }
+  .sparkrow .bar.drop { background: var(--warn); }
+  .spark-caption { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.64rem; color: var(--text-muted); }
+
+  .empty { font-size: 0.85rem; color: var(--text-muted); font-style: italic; padding: 4px 0; }
+
+  footer { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 16px; display: flex; flex-direction: column; gap: 4px; }
+
+  @media (max-width: 640px) {
+    .pipeline { grid-template-columns: repeat(4, 1fr); }
+    .frames { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <div class="note warn-tone" style="margin-bottom: 4px;">
+    <strong>⚠ 이 페이지는 2026-08-11 스냅샷입니다.</strong> STAGE 0 측정값과 1-A1(발목 유무) 결정은
+    지금도 유효합니다. 하지만 아래 STAGE 1의 구체적 비율 수치(머리 35% · 다리두께 25% · 발면적 40%,
+    "4-B/4-C1/4-C2" 섹션)는 <b>2026-08-22 사용자 지시로 폐기되고 완전히 새로운 비율 체계(머리=1
+    기준 단위)로 교체됐습니다</b> — 그 결과가
+    <a href="stage1-shortlong.html">숏다리 vs 롱다리(2026-08-23)</a> 페이지입니다.
+    이 페이지는 STAGE 1이 어떤 과정을 거쳤는지 보여주는 역사 기록으로 남겨둡니다.
+  </div>
+
+  <div class="head">
+    <div>
+      <h1>3robot_project</h1>
+      <div class="sub">소형 이족보행 캐릭터 로봇 — 시뮬레이션 전용 · MuJoCo / MJX</div>
+    </div>
+    <div class="updated">최종 갱신<br>2026-08-11</div>
+  </div>
+
+  <div class="pipeline">
+    <div class="stage-node" data-state="done"><div class="n">Stage 0</div><div class="label">스택 검증</div></div>
+    <div class="stage-node" data-state="active"><div class="n">Stage 1</div><div class="label">다리·비율 탐색</div></div>
+    <div class="stage-node" data-state="pending"><div class="n">Stage 2</div><div class="label">모방학습 검증</div></div>
+    <div class="stage-node" data-state="pending"><div class="n">Stage 3</div><div class="label">표현 채널 분리</div></div>
+    <div class="stage-node" data-state="pending"><div class="n">Stage 4</div><div class="label">트리거 동작</div></div>
+    <div class="stage-node" data-state="pending"><div class="n">Stage 5</div><div class="label">모캡 리타게팅</div></div>
+    <div class="stage-node" data-state="pending"><div class="n">Stage 6</div><div class="label">통합</div></div>
+  </div>
+
+  <div class="card">
+    <h2>STAGE 0 — 스택 검증 + 측정 <span class="pill ok">완료</span></h2>
+    <div class="frames">
+      <div class="frame"><img src="assets/legacy/dashboard_img_0.png" alt="OP3 standing pose"><div class="cap">stand / crouch</div></div>
+      <div class="frame"><img src="assets/legacy/dashboard_img_1.png" alt="OP3 leg swing"><div class="cap">swing phase</div></div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>#</th><th>측정 항목</th><th>값</th></tr></thead>
+        <tbody>
+          <tr><td class="tnum">①</td><td>역진자 시간상수 τ</td><td class="num">0.165 s</td></tr>
+          <tr><td class="tnum">②</td><td>제어 주파수 vs τ</td><td class="num">50 Hz → τ당 8.3회 <span class="pill ok" style="margin-left:6px">통과</span></td></tr>
+          <tr><td class="tnum">③</td><td>고관절 최대 벌림각 (외전)</td><td class="num">89°까지 접촉 없음</td></tr>
+          <tr><td class="tnum">④</td><td>명령 속도 상한</td><td class="num">1.107 m/s</td></tr>
+          <tr><td class="tnum">⑤</td><td>머리 접지각 (전/후/좌/우)</td><td class="num">80° / &gt;89° / 84° / 84°</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">측정 대상 OP3(기성 모델). 영상: <code>logs/result/stage0/rollout0~2.mp4</code></div>
+  </div>
+
+  <div class="card">
+    <h2>STAGE 1 — 다리 골격 탐색 <span class="pill warn">진행중</span></h2>
+    <h3>1-A1: 발목 유무 (candidate A 발목없음+롤오버밑창 vs candidate B 발목pitch) <span class="pill ok">완료 — B 승</span></h3>
+    <h3>4-B: 몸 비율(머리% × 발목구성) <span class="pill ok">완료 — A트랙 확정값: 머리 35%</span></h3>
+    <div class="note" style="border-color:var(--accent)">
+      <strong>하드웨어 트랙 결정 (2026-08-13, 사용자 지시):</strong> RL 성능은 B(발목)가 항상 이기지만, 실기 액추에이터 2개 비용 때문에 <b>이후 STAGE 1 튜닝은 후보 A(발목 없음)만</b> 진행한다. 목표는 정해진 예산 안에서 유연한 움직임 구현 — A로 형태를 다 확정한 뒤 최종적으로 B와 애니메이션 품질을 비교해서, 육안으로 확연히 부족하면 그때 발목을 추가한다. 진행 중: head35_A/head45_A(40% 근처 세밀조정) → 다리두께 → 발면적, 전부 후보 A로.
+    
+      <div class="table-scroll" style="margin-top:10px;">
+        <table>
+          <thead><tr><th>머리%(A)</th><th>episode_length</th><th>reward</th></tr></thead>
+          <tbody>
+            <tr><td class="tnum">30</td><td class="num">500</td><td class="num">407</td></tr>
+            <tr><td class="tnum">35</td><td class="num" style="color:var(--ok); font-weight:700">660</td><td class="num" style="color:var(--ok); font-weight:700">569</td></tr>
+            <tr><td class="tnum">40</td><td class="num" style="color:var(--bad)">375</td><td class="num" style="color:var(--bad)">308</td></tr>
+            <tr><td class="tnum">45</td><td class="num" style="color:var(--bad)">127 (전체 최저)</td><td class="num" style="color:var(--bad)">96</td></tr>
+            <tr><td class="tnum">50</td><td class="num">523</td><td class="num">428</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <ul class="checklist">
+      <li data-state="done"><span class="mark">✓</span> 절대 크기 확정 — 전체 높이 40cm, 머리 45% / 몸통·다리 각 27.5%</li>
+      <li data-state="done"><span class="mark">✓</span> candidate_A.xml, candidate_B.xml 작성 + 정적 안정성 검증</li>
+      <li data-state="done"><span class="mark">✓</span> envs/biped_rl.py 순수 RL 환경 (보상 튜닝 1~5번, GPU 스모크테스트 통과)</li>
+      <li data-state="done"><span class="mark">✓</span> 두 후보 10M-step PPO 학습 — 동일 보상·하이퍼파라미터·시드 → <b>후보 B(발목 pitch) 승</b></li>
+      <li data-state="done"><span class="mark">✓</span> 4-B 몸 비율 그리드 — 8개 전부 완료 (로컬 CPU, 20분/7분 페이싱)</li>
+      <li data-state="pending"><span class="mark">·</span> 다음: §4-B 3단계(몸통:다리 비율 스윕) 또는 5%p 세밀 조정 — 사용자 판단 대기</li>
+    </ul>
+    <div class="note">Colab GPU가 35시간(7회 연속) 막혀서 로컬 CPU(SB3)로 전환해 완주. 컴퓨터 과열 방지 20분/7분 페이싱, 실측 fps 1889~2858(예상보다 훨씬 빠름).</div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>변형</th><th>episode_length</th><th>reward</th></tr></thead>
+        <tbody>
+          <tr><td class="tnum">head30_A</td><td class="num">500</td><td class="num">407</td></tr>
+          <tr><td class="tnum">head30_B</td><td class="num" style="color:var(--ok); font-weight:700">956 (1위)</td><td class="num" style="color:var(--ok); font-weight:700">873</td></tr>
+          <tr><td class="tnum">head40_A</td><td class="num">375</td><td class="num">308</td></tr>
+          <tr><td class="tnum">head40_B</td><td class="num">690</td><td class="num">601</td></tr>
+          <tr><td class="tnum">head50_A</td><td class="num">523 (A중 1위)</td><td class="num">428</td></tr>
+          <tr><td class="tnum">head50_B</td><td class="num">930</td><td class="num">824</td></tr>
+          <tr><td class="tnum">head60_A</td><td class="num" style="color:var(--bad)">137 (최저)</td><td class="num" style="color:var(--bad)">97.3</td></tr>
+          <tr><td class="tnum">head60_B</td><td class="num">803</td><td class="num">682</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">발목 우위(B&gt;A)가 모든 비율에서 일관됨 — 비율과 관절구성이 이 축에서는 독립적. 머리 60%는 A/B 공통 최악(관성/무게중심). A 최적점(50%)과 B 최적점(30%)이 다름 — 40%에서 양쪽 다 국지적 저하가 있어 세밀 스윕 후보. 상세: docs/robot_spec.md §4-B.</div>
+
+    <div class="note warn-tone">
+      <strong>디버깅 메모:</strong> 첫 학습 시도에서 무릎 관절 기본각(0)이 관절 한계 경계값과 정확히 일치해 CBF 페널티가 상시 발동하는 버그를 발견 → 관절 범위를 <code>[-0.1745, 2.0944]</code>로 확장해 여유를 줌. 이어서 "무릎을 구부린 자세가 더 안정적이지 않을까" 시도했다가 오히려 하체 수평 오프셋 때문에 즉시 전도되는 걸 확인하고 편 다리 자세로 되돌림 — 최종적으로는 관절 범위 확장만으로 충분했다.
+    </div>
+
+    <table>
+      <thead><tr><th>스텝</th><th>candidate A</th><th>candidate B</th></tr></thead>
+      <tbody>
+        <tr><td class="tnum">0</td><td class="num">reward −15.1, len 32</td><td class="num">reward 1.3, len 37</td></tr>
+        <tr><td class="tnum">~2.3M</td><td class="num">reward 10.8, len 35</td><td class="num">reward 20.2, len 42</td></tr>
+        <tr><td class="tnum">~5.7M</td><td class="num">reward 31.2, len 53</td><td class="num">reward 506.5, len <b>661</b></td></tr>
+        <tr><td class="tnum">~8.0M</td><td class="num">reward 294.5, len 370</td><td class="num">reward 845.5, len <b>978</b></td></tr>
+        <tr><td class="tnum">~9.2M (피크)</td><td class="num">reward 331.8, len 500</td><td class="num" style="color:var(--ok); font-weight:700">reward 788.5, len 979</td></tr>
+        <tr><td class="tnum">10~10.3M (최종)</td><td class="num">reward 103.2, len 182</td><td class="num" style="color:var(--ok); font-weight:700">reward 355.8, len 475</td></tr>
+      </tbody>
+    </table>
+    <div class="note">candidate A는 6.9M~9.2M 구간에서 episode_length 53→500까지 급등했다가 182로 되돌아옴. candidate B는 3.4M~8.0M 구간에서 73→978까지 A보다 더 빠르고 더 크게 도약했고, 최종값도 훨씬 높다(475 vs 182) — <b>발목 관절이 균형 학습에 실질적으로 도움이 된다</b>는 결론. B는 세션 유실 후 체크포인트(1.1M)에서 재개해 총 학습량이 A보다 약 11% 많지만(~11.1M), A의 예산(10M)을 다 쓰기도 전인 8.0M 시점에 이미 A의 최종 성능을 크게 앞질렀으므로 결과를 뒤집을 정도는 아니다.</div>
+    <div class="note" style="border-color:var(--accent)">
+      <strong>절차 변경 (2026-08-11, 사용자 지시):</strong> 원래는 1-A1 승자만 고정하고 이후 스윕을 진행할 계획이었지만, 관절 구성과 몸 비율이 서로 독립적인지 직접 확인하기 위해 <b>4-B(몸 비율)·4-C(다리·발 형상)를 후보 A/B 둘 다에 대해 각각 실행</b>하기로 했다. 이 지점부터 실험 횟수가 약 2배로 늘어난다.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>학습된 정책 영상 — 후보 A vs B 비교 (둘 다 머리 30%)</h2>
+    <p style="margin:0; font-size:0.88rem; color:var(--text-muted)">
+      같은 몸 비율(머리 30%)에서 발목 유무만 다른 두 정책의 최종 체크포인트를 굴린 15초 롤아웃.
+      트래킹 카메라로 로봇을 계속 따라간다. <code>scripts/render_policy.py</code>로 생성.
+      발목 없는 쪽(A)은 롤오버 밑창(캡슐 3개, 접지 면적이 좁고 계속 옮겨감), 발목 있는 쪽(B)은
+      평평한 판 밑창(발이 평평할 때 훨씬 넓은 면적이 한번에 닿음) — 접지 면적 차이가 그대로 보인다.
+    </p>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+      <div>
+        <div style="font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted); margin-bottom:6px;">
+          후보 A (발목 없음, 롤오버) — <span style="color:var(--bad)">12.6초에 넘어짐</span>
+        </div>
+        <video controls loop muted playsinline style="width:100%; border-radius:10px; border:1px solid var(--border); background:#000;">
+          <source src="assets/legacy/dashboard_0.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div>
+        <div style="font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted); margin-bottom:6px;">
+          후보 B (발목 pitch, 평면) — <span style="color:var(--ok)">15초 완주</span>
+        </div>
+        <video controls loop muted playsinline style="width:100%; border-radius:10px; border:1px solid var(--border); background:#000;">
+          <source src="assets/legacy/dashboard_1.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+    <div class="note">둘 다 완전히 자연스러운 보행은 아니다 — 뒤뚱거림이 섞여 있고 팔·목은 아직 관절이 없는 고정 링크(STAGE 3 이전)라 그대로 붙어있다. A는 좁은 접지 면적 때문에 균형이 쉽게 무너지고, B는 넓은 접지 면적 덕에 15초 내내 버틴다 — episode_length 수치 차이(500 vs 956)가 영상으로도 확인된다.</div>
+  </div>
+
+  <div class="card">
+    <h2>4-C1: 다리 두께 (후보A, 머리35% 고정) <span class="pill ok">완료 — 25% 확정</span></h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>다리두께</th><th>episode_length</th><th>reward</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><td class="tnum">15%</td><td class="num" style="color:var(--bad)">161</td><td class="num" style="color:var(--bad)">117</td><td style="font-size:0.75rem; color:var(--text-muted)">얇을수록 불안정</td></tr>
+          <tr><td class="tnum">25%</td><td class="num">660</td><td class="num">569</td><td style="font-size:0.75rem; color:var(--text-muted)">= head35_A 재사용</td></tr>
+          <tr><td class="tnum">35%</td><td class="num">645</td><td class="num">502</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>4-C2: 발 면적 (후보A, 머리35%/다리두께25% 고정) <span class="pill ok">완료 — 40% 확정</span></h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>발 길이(다리길이 대비)</th><th>episode_length</th><th>reward</th></tr></thead>
+        <tbody>
+          <tr><td class="tnum">20%</td><td class="num" style="color:var(--bad)">158</td><td class="num" style="color:var(--bad)">110</td></tr>
+          <tr><td class="tnum">30%</td><td class="num">476</td><td class="num">409</td></tr>
+          <tr><td class="tnum">40%</td><td class="num" style="color:var(--ok); font-weight:700">781</td><td class="num" style="color:var(--ok); font-weight:700">678</td></tr>
+          <tr><td class="tnum">50%</td><td class="num" style="color:var(--bad)">450</td><td class="num" style="color:var(--bad)">362</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">역U자형 패턴 — 발이 작으면 지지 다각형이 좁아 불안정하고, 너무 크면(50%) 다시 나빠진다(관성·발-발 충돌 추정). 40%가 최적.</div>
+  </div>
+
+  <div class="card">
+    <h2>STAGE 1 최종 (후보 A 트랙) <span class="pill ok">확정</span></h2>
+    <p style="margin:0; font-size:0.88rem; color:var(--text-muted)">
+      머리35% · 몸통:다리 1:1 · 다리두께25% · 발면적40% · 발목없음(롤오버 밑창). <code>models/character.xml</code>로 통합, 정적 안정성 검증 완료.
+      아래는 이 최종 조합(footarea40_A 체크포인트)의 15초 롤아웃 — 끝까지 안 넘어짐.
+    </p>
+    <video controls loop muted playsinline style="width:100%; max-width:480px; margin:0 auto; display:block; border-radius:10px; border:1px solid var(--border); background:#000;">
+      <source src="assets/legacy/dashboard_2.mp4" type="video/mp4">
+    </video>
+    <div class="note">다음 계획: 이 최종 형태에 발목(후보 B)을 붙인 버전과 애니메이션/움직임 품질(가동범위, 부드러움)을 비교해서, 육안으로 A가 확연히 부족하면 그때 발목을 추가한다 (§4-A1 "하드웨어 트랙 결정" 참고). 미실행 항목: 1-A2(hip 축 실험), 몸통:다리 세부 스윕 — 알고 건너뜀.</div>
+  </div>
+
+  <div class="card">
+    <h2>운영 메모 — Colab 세션 안정성</h2>
+    <p style="margin:0; font-size:0.88rem; color:var(--text-muted)">
+      STAGE 0~1 진행 중 Colab 세션이 총 6회 중 3회 학습 도중/직후 죽었다 (원인 불명, idle 타임아웃과 무관한 경우도 있음). 한 번은 체크포인트 동기화를 깜빡해 candidate A의 진행분(약 30~40%)을 통째로 날린 적이 있다. candidate B는 체크포인트 재개(<code>--load_checkpoint_path</code>)로 손실 없이 완주.
+    </p>
+    <ul class="checklist">
+      <li data-state="done"><span class="mark">✓</span> <code>scripts/colab_sync_checkpoints.sh</code>로 확인할 때마다 로컬 동기화 (재발 방지)</li>
+      <li data-state="done"><span class="mark">✓</span> GPU 세션 생성 실패(할당량 소진) 시 로컬로 즉시 전환 — 비교 공정성을 위해 두 후보 모두 같은 백엔드로</li>
+      <li data-state="done"><span class="mark">✓</span> 로컬 학습 전환 시 학습 1회 완료마다 15분 휴식</li>
+    </ul>
+    <div class="note">상세 기록: <code>logs/colab_session_log.md</code></div>
+  </div>
+
+  <div class="card">
+    <h2>미해결 질문 <span class="pill pending">0건</span></h2>
+    <div class="empty">현재 logs/question.md에 대기 중인 항목 없음.</div>
+  </div>
+
+  <footer>
+    <span>CLAUDE.md 규칙에 따라 진행사항 갱신 시 이 대시보드도 함께 최신화됩니다.</span>
+    <span>로컬 경로: ~/3robot_project · 체크포인트: logs/checkpoints/ · 세션 안정성 로그: logs/colab_session_log.md</span>
+  </footer>
+</div>
+
+</body></html>

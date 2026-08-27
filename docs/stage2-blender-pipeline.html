@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3robot STAGE2 — Blender 걷기 레퍼런스 파이프라인</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #161a21;
+    --panel-border: #262c36;
+    --text: #e8eaed;
+    --text-dim: #9aa4b2;
+    --accent: #6ee7b7;
+    --accent-dim: #2f6f57;
+    --bad: #f87171;
+    --bad-dim: #4a2323;
+    --warn: #fbbf24;
+    --warn-dim: #4a3b16;
+    --good: #4ade80;
+    --code-bg: #0b0d11;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --panel-border: #e2e5ea;
+      --text: #1a1d23;
+      --text-dim: #5b6472;
+      --accent: #0f9d68;
+      --accent-dim: #d6f5e8;
+      --bad: #c0392b;
+      --bad-dim: #fbe0dd;
+      --warn: #9a6c00;
+      --warn-dim: #fdf0d0;
+      --good: #1e9e5c;
+      --code-bg: #eef0f3;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    line-height: 1.65;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px 96px; }
+  header { margin-bottom: 40px; }
+  h1 { font-size: 1.9rem; margin: 0 0 8px; letter-spacing: -0.01em; }
+  .subtitle { color: var(--text-dim); font-size: 1rem; }
+  .meta { color: var(--text-dim); font-size: 0.85rem; margin-top: 12px; }
+  h2 {
+    font-size: 1.3rem; margin: 56px 0 16px; padding-top: 8px;
+    border-top: 1px solid var(--panel-border);
+  }
+  h2:first-of-type { border-top: none; margin-top: 0; }
+  h3 { font-size: 1.05rem; margin: 28px 0 10px; color: var(--text); }
+  p { margin: 0 0 14px; }
+  a { color: var(--accent); }
+  code {
+    background: var(--code-bg); padding: 2px 6px; border-radius: 4px;
+    font-size: 0.9em; font-family: "SF Mono", Consolas, monospace;
+  }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--panel-border);
+    border-radius: 8px; padding: 14px 16px; overflow-x: auto;
+    font-size: 0.85rem; font-family: "SF Mono", Consolas, monospace;
+  }
+  .card {
+    background: var(--panel); border: 1px solid var(--panel-border);
+    border-radius: 12px; padding: 20px 22px; margin: 16px 0;
+  }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+  video { width: 100%; border-radius: 8px; display: block; background: #000; }
+  .video-caption { font-size: 0.85rem; color: var(--text-dim); margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; margin: 12px 0; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--panel-border); }
+  th { color: var(--text-dim); font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600;
+  }
+  .badge.pass { background: var(--accent-dim); color: var(--good); }
+  .badge.fail { background: var(--bad-dim); color: var(--bad); }
+  .badge.warn { background: var(--warn-dim); color: var(--warn); }
+  .note {
+    border-left: 3px solid var(--warn); padding: 10px 16px; background: var(--warn-dim);
+    border-radius: 0 8px 8px 0; font-size: 0.92rem; color: var(--text);
+  }
+  .note.good { border-left-color: var(--good); background: var(--accent-dim); }
+  .check-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--panel-border); }
+  .check-row:last-child { border-bottom: none; }
+  .check-name { font-weight: 500; }
+  .check-detail { color: var(--text-dim); font-size: 0.85rem; }
+  footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--panel-border); color: var(--text-dim); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Blender 걷기 애니메이션 → 모방학습 레퍼런스</h1>
+  <p class="subtitle">3robot_project · STAGE 2 · Blender 좌표 → 관절각 역산 파이프라인 구축과 검증</p>
+  <p class="meta">2026-08-27 · WSL2 → Windows 이전 이후 첫 세션</p>
+</header>
+
+<h2>배경</h2>
+<p>
+  <code>3robot_project</code>는 시뮬레이션 전용 소형 이족보행 캐릭터 로봇을 MuJoCo에서
+  자연스럽게 걷게 만드는 프로젝트다. STAGE 1(순수 RL로 다리 골격 확정)과 STAGE 2(RL
+  롤아웃을 레퍼런스로 한 모방학습 파이프라인 검증)까지는 이미 통과한 상태였다. 이번
+  세션의 목표는 사용자가 Blender로 직접 만든 걷기 애니메이션을 STAGE 2 파이프라인이
+  받아들일 수 있는 레퍼런스(npz)로 변환하는 것이었다 — 즉 RL 롤아웃이 아니라
+  <strong>사람이 손으로 만든 애니메이션</strong>을 레퍼런스로 쓸 수 있는지의 첫 실험.
+</p>
+
+<h2>왜 회전값이 아니라 좌표로 역산했는가</h2>
+<p>
+  자매 프로젝트 <code>2robot_project</code>(사족보행)가 같은 문제를 이미 풀어놓은 게
+  있어 먼저 그 코드(<code>blender/convert_bvh_to_npz.py</code>)를 확인했다. 예상과
+  달리 Blender 본의 회전값이 아니라 <strong>head/tail 월드 좌표만으로</strong> 관절각을
+  역산하고 있었다. 이유는 명확하다 — Blender 본의 로컬 회전축은 리그마다 제각각인
+  관례(roll 값)를 따르는데, 이걸 로봇 관절 축과 맞추는 과정에서 생기는 실수는
+  <strong>조용히 틀린 값</strong>을 만든다. 반면 "본 끝점이 월드 공간 어디 있는가"는
+  리그 내부 관례와 무관한, 검증 가능한 사실이다.
+</p>
+<p>
+  다만 2robot의 다리(hip 1축 + ankle 1축)와 달리 3robot의 hip은 <strong>yaw·roll·pitch
+  3축 직렬</strong>이라, 허벅지 벡터 하나(자유도 2)만으로는 3자유도를 풀 수 없는
+  진짜 부정형 문제였다. 해결책: 정강이 벡터까지 함께 써서, 무릎이 굽혀지는 평면의
+  법선(<code>cross(허벅지방향, 정강이방향)</code>)을 hip_pitch 관절의 로컬 Y축으로
+  직접 대입 — 이러면 회전행렬 두 열이 정해지고 나머지 한 열은 외적으로, 3축은
+  대수적으로 바로 나온다. 무릎각 자체는 hip 회전과 무관하게 두 벡터 사이 각도로
+  구해져 항상 안정적이다.
+</p>
+
+<h3>수치 검증</h3>
+<p>
+  알려진 관절각(양쪽 다리 비대칭, 몸통 12° 회전 포함)을 순정 MuJoCo로 정방향
+  계산해 가짜 Blender 데이터를 만든 뒤, 같은 파이프라인으로 역산했다.
+</p>
+<div class="card">
+  <table>
+    <thead><tr><th>항목</th><th class="num">정답</th><th class="num">역산값</th></tr></thead>
+    <tbody>
+      <tr><td>root 위치 / 회전</td><td class="num">–</td><td class="num">소수점까지 정확히 일치</td></tr>
+      <tr><td>l_hip_yaw / roll / pitch</td><td class="num">10.00 / 15.00 / -20.00°</td><td class="num">10.00 / 15.00 / -20.00°</td></tr>
+      <tr><td>l_knee</td><td class="num">40.00°</td><td class="num">40.00°</td></tr>
+      <tr><td>r_hip_yaw / roll / pitch</td><td class="num">-5.00 / -10.00 / 10.00°</td><td class="num">-5.00 / -10.00 / 10.00°</td></tr>
+      <tr><td>r_knee</td><td class="num">30.00°</td><td class="num">30.00°</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h3>육안 검증 — kinematic replay</h3>
+<p>
+  사용자가 실제로 만든 걷기 애니메이션(<code>npz_test.csv</code>, 250프레임, 30fps)을
+  변환한 뒤, 물리 계산 없이 매 프레임 qpos만 그대로 재생(정기구학)해 확인했다.
+</p>
+<div class="card">
+  <video src="assets/npz_test_kinematic.mp4" controls muted loop></video>
+  <p class="video-caption">다리만 — Blender 애니메이션과 비교해 "블렌더랑 똑같다"고 확인됨.</p>
+</div>
+<p>
+  팔은 <code>character.xml</code>에 관절이 없어(STAGE1 규칙: 팔은 질량만 있는 고정
+  링크) 이번 확인용으로만 임시 아마추어(<code>models/_viz_arms_temp.xml</code>, RL
+  파이프라인엔 미반영)를 만들어 다리와 같은 방식으로 팔 각도도 역산해봤다.
+</p>
+<div class="card">
+  <video src="assets/npz_test_with_arms_viz.mp4" controls muted loop></video>
+  <p class="video-caption">다리 + 임시 팔 — 팔꿈치가 자주 거의 펴져 있어 어깨 yaw 추출이 다리보다 불안정함(참고용).</p>
+</div>
+
+<h2>사전검사</h2>
+<p>CLAUDE.md가 요구하는 레퍼런스 사전검사(①~⑤) 중 이번에 확인한 항목들.</p>
+<div class="card">
+  <div class="check-row">
+    <div>
+      <div class="check-name">발 관통</div>
+      <div class="check-detail">최저 발 높이 0.004m, 지면 아래로 안 내려감</div>
+    </div>
+    <span class="badge pass">PASS</span>
+  </div>
+  <div class="check-row">
+    <div>
+      <div class="check-name">관절속도</div>
+      <div class="check-detail">최대 0.29 rad/s (한계 30 rad/s에 한참 못 미침)</div>
+    </div>
+    <span class="badge pass">PASS</span>
+  </div>
+  <div class="check-row">
+    <div>
+      <div class="check-name">관절 한계</div>
+      <div class="check-detail">415프레임 전부 범위 안</div>
+    </div>
+    <span class="badge pass">PASS</span>
+  </div>
+  <div class="check-row">
+    <div>
+      <div class="check-name">자기충돌 (AABB)</div>
+      <div class="check-detail">l_thigh_geom ↔ r_thigh_geom, 415/415 프레임. hip_yaw 좌우 비대칭(L +25~28° / R -4~-6°)이 로봇의 좁고 두꺼운 스탠스와 겹침 — 계산 버그 아님, 수치 검증으로 확인됨</div>
+    </div>
+    <span class="badge fail">FAIL</span>
+  </div>
+  <div class="check-row">
+    <div>
+      <div class="check-name">지지다각형</div>
+      <div class="check-detail">141/415 프레임(34%)에서 CoM 이탈, 최대 27.3mm — 다만 걷기 동작은 single-stance 구간마다 CoM이 벗어나는 게 정상(정적 안정성 검사라 동적 보행엔 참고용)</div>
+    </div>
+    <span class="badge warn">FAIL (걷기라 예상됨)</span>
+  </div>
+</div>
+<div class="note">
+  <strong>참고</strong>: <code>models/character.xml</code>은 허벅지/종아리 geom이
+  <code>contype="0" conaffinity="0"</code>(기본값)이라 물리 시뮬레이션에서 애초에
+  서로 충돌 판정이 안 난다 — 오직 발 geom만 충돌이 켜져 있다. 즉 위 자기충돌
+  FAIL은 물리엔진이 막는 게 아니라 <code>smoke_test_stage1.py</code>식 AABB 정적
+  검사(기하학적 겹침)로만 잡히는 것이고, 실제 RL 학습 자체를 막지는 않는다.
+</div>
+
+<h2>STAGE2 스모크 학습</h2>
+<p>
+  자기충돌을 무시한 채(위 이유로 코드 수정 없이 이미 그 상태) 이 레퍼런스로
+  50만 스텝 스모크 학습을 돌려, 동작 자체가 학습 가능한지 확인했다.
+  6코어 사용(8코어 중 2코어는 발열 여유로 비워둠), 20분 작업/7분 휴식 페이싱.
+</p>
+<div class="card">
+  <table>
+    <thead>
+      <tr><th>지표</th><th class="num">12k</th><th class="num">25%</th><th class="num">50%</th><th class="num">75%</th><th class="num">500k(끝)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>episode_length</td><td class="num">20.6</td><td class="num">22.1</td><td class="num">25.2</td><td class="num">28.4</td><td class="num">31.1</td></tr>
+      <tr><td>imitation_leg_pose</td><td class="num">0.156</td><td class="num">0.233</td><td class="num">0.362</td><td class="num">0.571</td><td class="num">0.808</td></tr>
+      <tr><td>imitation_root_pos</td><td class="num">2.93</td><td class="num">3.15</td><td class="num">3.54</td><td class="num">3.96</td><td class="num">4.29</td></tr>
+      <tr><td>imitation_root_ori</td><td class="num">2.00</td><td class="num">2.12</td><td class="num">2.30</td><td class="num">2.63</td><td class="num">2.85</td></tr>
+    </tbody>
+  </table>
+</div>
+<div class="note good">
+  <strong>결론</strong>: 전 구간에서 정체 없이 상승 — CLAUDE.md STAGE2 통과 기준(reward가
+  정체 없이 상승)과 같은 패턴. 자기충돌(허벅지 겹침)이 실제로 학습을 막지 않았다.
+  이 동작 자체는 로봇이 배울 수 있는 것으로 보이고, 지금 막히는 지점은 순수히
+  <strong>외형(스탠스 폭)</strong> 문제 — 나중에 다리 간격/두께를 다시 설계하면
+  이 애니메이션을 그대로 쓸 수 있을 가능성을 뒷받침한다. (500k는 스모크 규모라
+  아직 다 배운 상태는 아니고, 상승 추세만 확인한 것.)
+</div>
+
+<h2>남은 일</h2>
+<ul>
+  <li><code>scripts/check_feasibility.py</code>(CLAUDE.md가 요구하는 5개 사전검사 통합본)가
+  아직 없음 — 이번엔 그때그때 즉석 스크립트로 대신함.</li>
+  <li>자기충돌 문제를 실제로 해소하려면 hip_yaw 비대칭을 줄이거나(애니메이션 수정)
+  로봇 스탠스 폭을 다시 설계해야 함(STAGE1 재검토 필요).</li>
+  <li>팔 관절각 역산은 다리보다 불안정 — 필요해지면(STAGE3) 별도로 다듬을 것.</li>
+</ul>
+
+<footer>
+  3robot_project · <a href="https://github.com/yunseo326/3robot_project">GitHub 저장소</a>
+</footer>
+
+</div>
+</body>
+</html>

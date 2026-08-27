@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>숏다리 vs 롱다리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #eef1f4;
+    --surface: #ffffff;
+    --surface-2: #e4e9ee;
+    --ink: #161b22;
+    --ink-dim: #57626f;
+    --line: #d3dae1;
+    --accent: #2f7fc4;
+    --accent-soft: #dbe9f5;
+    --case1: #b45f1e;
+    --case1-soft: #f4e2cf;
+    --case2: #35748c;
+    --case2-soft: #d9e8ec;
+    --good: #2f7a4f;
+    --warn: #b23b2e;
+    --warn-soft: #f7e2dd;
+    --part-torso: #5c6875;
+    --part-leg: #333d47;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f151b;
+      --surface: #161e26;
+      --surface-2: #1c2530;
+      --ink: #e7ecf1;
+      --ink-dim: #96a4b2;
+      --line: #2a3641;
+      --accent: #6bacec;
+      --accent-soft: #1e3247;
+      --case1: #e2933f;
+      --case1-soft: #3a2a17;
+      --case2: #6fb4cc;
+      --case2-soft: #1c3138;
+      --good: #6fc294;
+      --warn: #e2776a;
+      --warn-soft: #3a241f;
+      --part-torso: #8b97a3;
+      --part-leg: #b8c2cc;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f151b;
+    --surface: #161e26;
+    --surface-2: #1c2530;
+    --ink: #e7ecf1;
+    --ink-dim: #96a4b2;
+    --line: #2a3641;
+    --accent: #6bacec;
+    --accent-soft: #1e3247;
+    --case1: #e2933f;
+    --case1-soft: #3a2a17;
+    --case2: #6fb4cc;
+    --case2-soft: #1c3138;
+    --good: #6fc294;
+    --warn: #e2776a;
+    --warn-soft: #3a241f;
+    --part-torso: #8b97a3;
+    --part-leg: #b8c2cc;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    flex: none;
+  }
+  h1 {
+    font-family: "IBM Plex Serif", ui-serif, Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(34px, 5vw, 48px);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    margin: 14px 0 12px;
+    text-wrap: balance;
+  }
+  .lede {
+    font-size: 17px;
+    color: var(--ink-dim);
+    max-width: 62ch;
+    margin: 0 0 8px;
+  }
+  .lede code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  section { margin-top: 52px; }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 10px;
+    margin-bottom: 22px;
+  }
+  .section-head h2 {
+    font-family: "IBM Plex Serif", serif;
+    font-weight: 600;
+    font-size: 21px;
+    margin: 0;
+  }
+  .section-head .tag {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+    color: var(--ink-dim);
+    letter-spacing: 0.04em;
+  }
+
+  /* ---- verdict callout ---- */
+  .verdict {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 6px;
+    padding: 22px 24px;
+    display: grid;
+    gap: 14px;
+  }
+  .verdict-head {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+  .verdict p { margin: 0; font-size: 16px; }
+  .verdict-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .stat-chip {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 6px 13px;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-chip b { font-weight: 600; color: var(--ink); }
+  .stat-chip .win { color: var(--good); }
+  .caveat {
+    font-size: 13.5px;
+    color: var(--ink-dim);
+    border-top: 1px dashed var(--line);
+    padding-top: 12px;
+    margin-top: 2px !important;
+  }
+
+  /* ---- case tags ---- */
+  .case-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+  .case-tag .sw { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .case-tag.c1 { background: var(--case1-soft); color: var(--case1); }
+  .case-tag.c1 .sw { background: var(--case1); }
+  .case-tag.c2 { background: var(--case2-soft); color: var(--case2); }
+  .case-tag.c2 .sw { background: var(--case2); }
+
+  /* ---- video hero ---- */
+  .video-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 680px) {
+    .video-grid { grid-template-columns: 1fr; }
+  }
+  .video-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .video-card video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #0b0e12;
+    object-fit: cover;
+  }
+  .video-card .vc-body {
+    padding: 14px 16px 16px;
+    display: grid;
+    gap: 6px;
+  }
+  .video-card .vc-title {
+    font-family: "IBM Plex Serif", serif;
+    font-weight: 600;
+    font-size: 16px;
+  }
+  .video-card .vc-spec {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+
+  /* ---- warn callout ---- */
+  .warn-box {
+    background: var(--warn-soft);
+    border: 1px solid var(--warn);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 22px;
+  }
+  .warn-head {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--warn);
+    margin-bottom: 6px;
+  }
+  .warn-box p { margin: 0; font-size: 14.5px; }
+
+  .fix-box {
+    background: var(--surface-2);
+    border: 1px solid var(--good);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 22px;
+  }
+  .fix-head {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--good);
+    margin-bottom: 6px;
+  }
+  .fix-box p { margin: 0; font-size: 14px; }
+
+  .stale-badge {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--warn);
+    background: var(--warn-soft);
+    border: 1px solid var(--warn);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 16px;
+  }
+
+  /* ---- to-scale schematic ---- */
+  .scale-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 22px;
+  }
+  @media (max-width: 680px) { .scale-grid { grid-template-columns: 1fr; } }
+  .scale-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px;
+    display: grid;
+    gap: 10px;
+    justify-items: center;
+  }
+  .scale-svg { width: 100%; max-width: 240px; height: auto; }
+  .scale-svg .ground { stroke: var(--ink-dim); stroke-width: 1.5; }
+  .scale-svg .blk.head { fill: var(--accent); opacity: 0.88; }
+  .scale-svg .blk.head-lit { fill: none; stroke: var(--warn); stroke-width: 1.4; stroke-dasharray: 4 3; }
+  .scale-svg .blk.torso { fill: var(--part-torso); opacity: 0.85; }
+  .scale-svg .blk.leg { fill: var(--part-leg); opacity: 0.9; }
+  .scale-legend {
+    display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px; color: var(--ink-dim);
+  }
+  .scale-legend .lg-item { display: flex; align-items: center; gap: 6px; }
+  .scale-legend .sw { width: 13px; height: 9px; border-radius: 2px; flex: none; }
+  .scale-legend .sw.head { background: var(--accent); opacity: 0.88; }
+  .scale-legend .sw.head-lit { background: none; border: 1.4px dashed var(--warn); }
+  .scale-legend .sw.torso { background: var(--part-torso); }
+  .scale-legend .sw.leg { background: var(--part-leg); }
+
+  /* ---- metrics table ---- */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 560px;
+    font-size: 14.5px;
+    background: var(--surface);
+  }
+  thead th {
+    text-align: left;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-dim);
+    font-weight: 500;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-2);
+  }
+  thead th.num, tbody td.num { text-align: right; }
+  tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13.5px;
+    vertical-align: top;
+  }
+  tbody td.label {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.win { color: var(--good); font-weight: 600; }
+  .ratio { color: var(--ink-dim); font-size: 12px; margin-left: 6px; }
+  .foot-note { font-size: 12px; color: var(--ink-dim); margin-top: 10px; }
+
+  /* ---- charts ---- */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 680px) {
+    .chart-grid { grid-template-columns: 1fr; }
+  }
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 18px 14px;
+  }
+  .chart-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .chart-sub {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    margin-bottom: 10px;
+  }
+  svg.chart { width: 100%; height: auto; display: block; overflow: visible; }
+  .grid-line { stroke: var(--line); stroke-width: 1; }
+  .axis-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    fill: var(--ink-dim);
+  }
+  .curve { fill: none; stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round; }
+  .curve.c1 { stroke: var(--case1); }
+  .curve.c2 { stroke: var(--case2); }
+  .endpoint { r: 4; stroke: var(--surface); stroke-width: 2; }
+  .endpoint.c1 { fill: var(--case1); }
+  .endpoint.c2 { fill: var(--case2); }
+  .chart-legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 10px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+    color: var(--ink-dim);
+  }
+  .chart-legend .lg-item { display: flex; align-items: center; gap: 6px; }
+  .chart-legend .sw { width: 12px; height: 2.25px; border-radius: 2px; }
+  .chart-legend .sw.c1 { background: var(--case1); }
+  .chart-legend .sw.c2 { background: var(--case2); }
+
+  /* ---- interpretation ---- */
+  .interp { font-size: 15.5px; }
+  .interp p { margin: 0 0 14px; }
+  .interp p:last-child { margin-bottom: 0; }
+
+  /* ---- overlay comparator (STAGE1 ref vs STAGE2 mimic) ---- */
+  .overlay-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .overlay-stage {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0b0e12;
+  }
+  .overlay-stage video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .overlay-stage .ov-top { opacity: 0.5; }
+  .overlay-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 16px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+  }
+  .overlay-controls label { color: var(--ink-dim); }
+  .overlay-controls input[type="range"] {
+    accent-color: var(--accent);
+    width: 160px;
+  }
+  .overlay-controls button {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12.5px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+  }
+  .overlay-controls button:hover { border-color: var(--accent); color: var(--accent); }
+  .overlay-legend {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+    color: var(--ink-dim);
+  }
+  .overlay-legend .lg-item { display: flex; align-items: center; gap: 6px; }
+  .overlay-legend .sw { width: 12px; height: 8px; border-radius: 2px; flex: none; }
+
+  /* ---- footer ---- */
+  footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-dim);
+    display: grid;
+    gap: 6px;
+  }
+  footer .fk { color: var(--ink); }
+
+  a { color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+
+</head>
+<body>
+<div class="page">
+
+  <div class="eyebrow"><span class="dot"></span>3ROBOT PROJECT · STAGE 1 · 2026-08-23 재학습</div>
+  <h1>숏다리 vs 롱다리</h1>
+  <p class="lede">머리 높이·폭을 1 기준 단위로 둔 새 <span class="mono">robot_spec.md</span> 비율 체계의 "선제 실험값" 2개 — 몸통·다리가 짧은 <b>case1_short</b>와 몸통·다리가 긴 <b>case2_long</b> — 를 완전히 동일한 조건으로 순수 RL 10,000,000스텝 학습해 걷기 성능을 비교했다. 다리 부착 규칙 정정(다리폭 0.175, 돌출캡 0.01) 이후 재학습한 결과다.</p>
+
+  <section>
+    <div class="verdict">
+      <div class="verdict-head">Verdict</div>
+      <p>10M스텝 시점, <b>case2_long(롱다리형)</b>이 에피소드 길이·보상 모든 지표에서 case1_short을 앞선다 — 순서가 뒤집혔다. 다리 부착 규칙을 고치기 전(다리폭 0.15, 몸통 옆면 부착)에는 case1_short가 우위였는데, 다리가 두꺼워지고 스탠스가 좁아지자(다리폭 0.175, 돌출캡 0.01) case2_long이 역전했다.</p>
+      <div class="verdict-stats">
+        <span class="stat-chip">episode_length <b>222.0</b> vs <b class="win">281.5</b></span>
+        <span class="stat-chip">ep_rew_mean <b>164.1</b> vs <b class="win">203.5</b></span>
+        <span class="stat-chip">forward reward <b>77.7</b> vs <b class="win">98.1</b></span>
+        <span class="stat-chip">joint_limit 페널티 <b class="win">−0.66</b> vs <b>−1.24</b></span>
+      </div>
+      <p class="caveat">둘 다 최대 에피소드 길이(1000)에 도달하지 못해 미수렴 — "확정 승자"가 아니라 <b>10M스텝·수정된 지오메트리 기준 case2 우위</b>로 읽어야 한다. 지오메트리 하나(다리 부착 방식)만 바꿔도 순위가 뒤집힌다는 건, 이 두 축(몸 비율 vs 다리 부착)이 서로 독립적이지 않다는 뜻이라 주의가 필요하다. 승자 확정·추가 학습·0.05 그리드 스윕은 사용자 판단 대기.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>롤아웃 영상</h2>
+      <span class="tag">deterministic policy · 10s max · 다리폭 0.175 재학습본 (2026-08-23)</span>
+    </div>
+    <div class="video-grid">
+      <div class="video-card">
+        <video controls muted loop playsinline preload="metadata" data-autoplay="1">
+          <source src="assets/legacy/shortlong_0.mp4" type="video/mp4">
+        </video>
+        <div class="vc-body">
+          <span class="case-tag c1"><span class="sw"></span>case1_short</span>
+          <div class="vc-title">숏다리형</div>
+          <div class="vc-spec">몸통 0.35H · 0.4W&nbsp;&nbsp;다리 0.2H · 0.175W&nbsp;&nbsp;(머리=1 기준)</div>
+        </div>
+      </div>
+      <div class="video-card">
+        <video controls muted loop playsinline preload="metadata" data-autoplay="1">
+          <source src="assets/legacy/shortlong_1.mp4" type="video/mp4">
+        </video>
+        <div class="vc-body">
+          <span class="case-tag c2"><span class="sw"></span>case2_long</span>
+          <div class="vc-title">롱다리형</div>
+          <div class="vc-spec">몸통 0.55H · 0.4W&nbsp;&nbsp;다리 0.5H · 0.175W&nbsp;&nbsp;(머리=1 기준)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>실제 치수</h2>
+      <span class="tag">2026-08-23 수정본 · generate_from_head_unit_ratios() 산출값 · 전체 높이 0.40m 앵커</span>
+    </div>
+
+    <div class="fix-box">
+      <div class="fix-head">✓ 정정됨 (2026-08-23)</div>
+      <p><b>몸통 폭</b>(torso 자체의 가로 길이)과 <b>다리 부착 위치</b>(hip_y, 다리가 몸에 붙는 지점의 중심선까지 거리)는 서로 다른 개념인데, 이전 버전은 <span class="mono">hip_y = torso_half_y</span>로 고정해놔서 두 값이 우연히 같았다 — 이걸 "몸통 폭 = 다리 간격"으로 잘못 표시했었다. 사용자가 확정한 규칙으로 교체: <b>다리 1개의 바깥쪽 면은 몸통 옆면에서 최대 0.01(머리=1 기준)까지만 벗어날 수 있다.</b> 다리 폭(지름)도 0.15 → <b>0.175</b>로 변경했다. 재검증 중 <span class="mono">smoke_test_stage1.py</span>의 자기충돌 검사가 캡슐 지오메트리를 박스로 착각하던 버그도 함께 발견해 고쳤다 — 아래 표·도식·다음 절 스모크테스트는 전부 수정 후 재검증된 값이다.</p>
+    </div>
+
+    <div class="warn-box">
+      <div class="warn-head">⚠ 아직 미해결</div>
+      <p>머리 폭은 여전히 <b>옛 40cm 확정안의 종횡비 상수</b>(<span class="mono">HEAD_Y_TO_H≈0.389</span>)를 쓴다. robot_spec.md의 "머리의 높이와 가로가 기준점으로 1의 비율"을 문자 그대로 읽으면 머리는 높이=폭(1:1 정사각)이어야 하는데, 실제로는 더 좁고 길쭉하게 나온다 — 아래 도식의 실선(실제 생성값)과 점선(1:1로 해석했을 때) 차이가 그것이다.</p>
+    </div>
+
+    <div class="scale-grid">
+      <div class="scale-card">
+        <span class="case-tag c1"><span class="sw"></span>case1_short</span>
+        <svg class="scale-svg" viewBox="0 0 260 210">
+          <line class="ground" x1="16" y1="198" x2="244" y2="198"></line>
+          <rect class="blk head-lit" x="70.6" y="14" width="118.7" height="118.7" rx="3"></rect>
+          <rect class="blk head" x="83.8" y="14" width="92.3" height="118.7" rx="3"></rect>
+          <rect class="blk torso" x="106.3" y="132.7" width="47.5" height="41.5" rx="2"></rect>
+          <rect class="blk leg" x="105.1" y="174.3" width="20.8" height="23.7" rx="2"></rect>
+          <rect class="blk leg" x="134.1" y="174.3" width="20.8" height="23.7" rx="2"></rect>
+        </svg>
+        <div class="scale-legend">
+          <span class="lg-item"><span class="sw head"></span>머리 25.8cm</span>
+          <span class="lg-item"><span class="sw torso"></span>몸통 9.0cm</span>
+          <span class="lg-item"><span class="sw leg"></span>다리 지름 4.5cm</span>
+          <span class="lg-item"><span class="sw head-lit"></span>머리 1:1 해석 시</span>
+        </div>
+      </div>
+      <div class="scale-card">
+        <span class="case-tag c2"><span class="sw"></span>case2_long</span>
+        <svg class="scale-svg" viewBox="0 0 260 210">
+          <line class="ground" x1="16" y1="198" x2="244" y2="198"></line>
+          <rect class="blk head-lit" x="85.1" y="14" width="89.7" height="89.7" rx="3"></rect>
+          <rect class="blk head" x="95.1" y="14" width="69.8" height="89.7" rx="3"></rect>
+          <rect class="blk torso" x="112.1" y="103.7" width="35.9" height="49.4" rx="2"></rect>
+          <rect class="blk leg" x="111.2" y="153.1" width="15.7" height="44.9" rx="2"></rect>
+          <rect class="blk leg" x="133.2" y="153.1" width="15.7" height="44.9" rx="2"></rect>
+        </svg>
+        <div class="scale-legend">
+          <span class="lg-item"><span class="sw head"></span>머리 19.5cm</span>
+          <span class="lg-item"><span class="sw torso"></span>몸통 10.7cm</span>
+          <span class="lg-item"><span class="sw leg"></span>다리 지름 3.4cm</span>
+          <span class="lg-item"><span class="sw head-lit"></span>머리 1:1 해석 시</span>
+        </div>
+      </div>
+    </div>
+    <p class="foot-note">두 도식은 같은 축척(1cm=동일 px, 전체 높이 40cm 기준)이라 서로 직접 비교 가능하다. 다리가 몸통 옆면이 아니라 안쪽(중심 쪽)에 붙어, 다리 바깥쪽 면이 몸통 옆면보다 살짝만(0.01 비율) 튀어나오는 형태다.</p>
+
+    <div class="table-wrap" style="margin-top:18px;">
+      <table>
+        <thead>
+          <tr><th>부위 / 치수</th><th class="num">case1_short</th><th class="num">case2_long</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="label">머리 높이</td><td class="num">25.8 cm<span class="ratio">×1.00</span></td><td class="num">19.5 cm<span class="ratio">×1.00</span></td></tr>
+          <tr><td class="label">머리 폭 — 실제 생성값 (옛 종횡비)</td><td class="num">20.1 cm<span class="ratio">×0.78</span></td><td class="num">15.2 cm<span class="ratio">×0.78</span></td></tr>
+          <tr><td class="label">머리 폭 — 1:1 해석 시</td><td class="num">25.8 cm<span class="ratio">×1.00</span></td><td class="num">19.5 cm<span class="ratio">×1.00</span></td></tr>
+          <tr><td class="label">몸통 높이</td><td class="num">9.0 cm<span class="ratio">×0.35</span></td><td class="num">10.7 cm<span class="ratio">×0.55</span></td></tr>
+          <tr><td class="label">몸통 폭 (자체 가로)</td><td class="num">10.3 cm<span class="ratio">×0.40</span></td><td class="num">7.8 cm<span class="ratio">×0.40</span></td></tr>
+          <tr><td class="label">몸통 깊이</td><td class="num">7.7 cm<span class="ratio">×0.30</span></td><td class="num">5.9 cm<span class="ratio">×0.30</span></td></tr>
+          <tr><td class="label">다리 높이</td><td class="num">5.2 cm<span class="ratio">×0.20</span></td><td class="num">9.8 cm<span class="ratio">×0.50</span></td></tr>
+          <tr><td class="label">다리 지름 (다리 1개 폭, 0.15→0.175)</td><td class="num">4.5 cm<span class="ratio">×0.175</span></td><td class="num">3.4 cm<span class="ratio">×0.175</span></td></tr>
+          <tr><td class="label">다리 부착 위치 (hip_y, 중심선 기준)</td><td class="num">3.2 cm<span class="ratio">×0.12</span></td><td class="num">2.4 cm<span class="ratio">×0.12</span></td></tr>
+          <tr><td class="label">다리 바깥쪽 면 — 몸통 옆면 대비</td><td class="num win">+0.26 cm<span class="ratio">×0.01</span></td><td class="num win">+0.20 cm<span class="ratio">×0.01</span></td></tr>
+          <tr><td class="label">다리-다리 간격 (겹침 없음)</td><td class="num">1.8 cm</td><td class="num">1.4 cm</td></tr>
+          <tr><td class="label">발 길이</td><td class="num">1.8 cm<span class="ratio">×0.07</span></td><td class="num">3.4 cm<span class="ratio">×0.17</span></td></tr>
+          <tr><td class="label">발 폭</td><td class="num">1.3 cm<span class="ratio">×0.05</span></td><td class="num">2.4 cm<span class="ratio">×0.12</span></td></tr>
+          <tr><td class="label">전체 높이 (앵커)</td><td class="num">40.0 cm<span class="ratio">×1.55</span></td><td class="num">40.0 cm<span class="ratio">×2.05</span></td></tr>
+          <tr><td class="label">머리 비중 (전체 높이 대비)</td><td class="num">64.5%</td><td class="num">48.8%</td></tr>
+          <tr><td class="label">다리 비중 (전체 높이 대비)</td><td class="num">12.9%</td><td class="num">24.4%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="foot-note"><span class="ratio" style="margin-left:0;">×N</span> = 머리 높이를 1로 뒀을 때의 배수 — <span class="mono">docs/robot_spec.md</span>에 적힌 입력값과 그대로 대응한다(예: 몸통 높이 ×0.35 = robot_spec.md의 "몸통 높이 0.35"). "다리 바깥쪽 면" 행의 <span class="win">+0.01</span>은 사용자가 확정한 돌출 캡(다리 바깥쪽 면이 몸통 옆면에서 최대 0.01까지만 벗어날 수 있음)을 정확히 맞춰 배치했다는 뜻이다. case1은 다리 지름(×0.175)이 다리 높이(×0.20)의 88%에 달해 여전히 "다리"라기보다 짧은 원통 받침에 가깝다 — 다리가 두꺼워지며 이 비율은 이전(75%)보다 더 극단적이 됐다. 머리 비중도 64.5%로 case2(48.8%)보다 훨씬 크다 — case1이 학습 지표에서 앞선 것과 별개로, 이 비율 자체가 원래 의도한 캐릭터 형태에 부합하는지는 별도로 확인이 필요하다.</p>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>학습 곡선</h2>
+      <span class="tag">rollout/ep_len_mean · reward/forward — 60 pt 다운샘플 · 2026-08-23 재학습</span>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">episode_length (mean)</div>
+        <div class="chart-sub">0 → 10,000,000 steps · max 373</div>
+        <svg class="chart" viewBox="0 0 640 220" preserveAspectRatio="none">
+          <line class="grid-line" x1="0" y1="10" x2="640" y2="10"></line>
+          <line class="grid-line" x1="0" y1="115" x2="640" y2="115"></line>
+          <line class="grid-line" x1="0" y1="210" x2="640" y2="210"></line>
+          <text class="axis-label" x="4" y="20">373</text>
+          <text class="axis-label" x="4" y="207">0</text>
+          <polyline class="curve c1" points="11.7,193.3 22.1,193.1 32.4,192.8 42.8,192.4 53.1,192.8 64.0,192.1 74.9,191.3 85.3,190.7 95.6,189.6 106.0,188.0 116.3,188.1 127.2,186.8 138.1,185.5 148.5,184.0 158.8,183.0 169.2,181.3 179.5,179.8 190.4,178.1 201.3,175.6 212.0,174.8 222.6,173.9 233.0,171.4 243.3,170.3 254.2,167.1 265.1,166.0 275.5,163.1 285.8,160.5 296.2,159.1 306.5,156.7 317.4,155.8 328.3,155.8 338.7,150.9 349.0,148.9 359.4,146.4 369.7,144.6 380.6,138.2 391.5,140.2 401.9,136.9 412.2,132.3 422.8,132.6 433.2,132.7 444.0,131.0 454.9,128.4 465.3,125.6 475.6,121.8 486.0,123.1 496.4,118.5 507.2,114.9 518.1,113.6 528.5,113.9 538.8,113.2 549.2,103.2 559.6,108.0 570.4,101.5 581.3,91.8 591.7,99.9 602.0,96.6 612.4,93.4 622.8,79.2 633.8,86.0"></polyline>
+          <polyline class="curve c2" points="11.7,194.3 22.1,193.7 32.4,193.0 42.8,192.1 53.1,191.1 64.0,190.2 74.9,189.8 85.3,188.7 95.6,188.6 106.0,188.3 116.3,186.9 127.2,185.3 138.1,183.9 148.5,180.5 158.8,178.6 169.2,174.0 179.5,167.1 190.4,163.6 201.4,154.7 212.1,143.7 222.4,129.9 232.8,139.7 243.2,123.0 254.0,116.6 264.9,67.3 275.3,81.9 285.6,105.2 296.0,106.1 306.4,100.8 317.2,76.4 328.1,79.8 338.5,30.0 348.8,103.3 359.2,74.3 369.6,61.1 380.4,46.8 391.3,43.4 401.7,18.2 412.0,61.4 422.4,62.3 432.8,62.2 443.6,32.6 454.5,27.9 464.9,55.7 475.2,30.6 485.6,49.6 496.0,10.0 506.8,20.0 517.7,44.0 528.1,22.1 538.4,46.2 549.3,20.8 559.9,45.3 570.8,112.8 581.7,95.4 592.0,46.3 602.4,54.2 612.8,44.7 623.1,45.0 634.0,68.4"></polyline>
+          <circle class="endpoint c1" cx="633.8" cy="86.0"></circle>
+          <circle class="endpoint c2" cx="634.0" cy="68.4"></circle>
+        </svg>
+        <div class="chart-legend">
+          <span class="lg-item"><span class="sw c1"></span>case1_short</span>
+          <span class="lg-item"><span class="sw c2"></span>case2_long</span>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">reward / forward (누적)</div>
+        <div class="chart-sub">0 → 10,000,000 steps · max 130</div>
+        <svg class="chart" viewBox="0 0 640 220" preserveAspectRatio="none">
+          <line class="grid-line" x1="0" y1="10" x2="640" y2="10"></line>
+          <line class="grid-line" x1="0" y1="115" x2="640" y2="115"></line>
+          <line class="grid-line" x1="0" y1="210" x2="640" y2="210"></line>
+          <text class="axis-label" x="4" y="20">130</text>
+          <text class="axis-label" x="4" y="207">0</text>
+          <polyline class="curve c1" points="11.7,209.3 22.1,209.2 32.4,208.7 42.8,206.9 53.1,204.7 64.0,202.9 74.9,201.5 85.3,200.8 95.6,199.9 106.0,199.6 116.3,198.8 127.2,197.7 138.1,196.1 148.5,195.0 158.8,193.4 169.2,191.5 179.5,189.5 190.4,187.0 201.3,185.4 212.0,183.4 222.6,182.0 233.0,180.0 243.3,178.2 254.2,177.4 265.1,173.5 275.5,170.7 285.8,169.0 296.2,167.8 306.5,167.2 317.4,164.9 328.3,163.0 338.7,160.4 349.0,158.4 359.4,153.9 369.7,152.1 380.6,146.8 391.5,146.8 401.9,143.7 412.2,139.6 422.8,139.1 433.2,136.4 444.0,136.6 454.9,132.9 465.3,129.5 475.6,127.6 486.0,127.3 496.4,122.1 507.2,117.8 518.1,118.0 528.5,118.1 538.8,115.6 549.2,106.5 559.6,108.4 570.4,102.1 581.3,92.3 591.7,98.2 602.0,96.1 612.4,89.6 622.8,81.4 633.8,80.8"></polyline>
+          <polyline class="curve c2" points="11.7,210.0 22.1,209.4 32.4,208.4 42.8,206.6 53.1,204.7 64.0,202.6 74.9,200.1 85.3,198.0 95.6,196.5 106.0,195.8 116.3,194.9 127.2,193.4 138.1,190.8 148.5,189.6 158.8,186.4 169.2,183.1 179.5,179.9 190.4,174.7 201.4,169.2 212.1,160.9 222.4,152.1 232.8,152.6 243.2,141.3 254.0,138.4 264.9,110.4 275.3,111.2 285.6,124.3 296.0,119.7 306.4,113.6 317.2,96.6 328.1,92.1 338.5,51.3 348.8,111.7 359.2,87.2 369.6,70.0 380.4,60.1 391.3,59.3 401.7,36.6 412.0,72.3 422.4,75.6 432.8,66.1 443.6,35.5 454.5,26.7 464.9,49.0 475.2,35.3 485.6,52.5 496.0,10.0 506.8,21.9 517.7,45.3 528.1,21.1 538.4,57.1 549.3,22.5 559.9,53.5 570.8,111.2 581.7,96.0 592.0,46.2 602.4,53.5 612.8,43.2 623.1,45.1 634.0,65.4"></polyline>
+          <circle class="endpoint c1" cx="633.8" cy="80.8"></circle>
+          <circle class="endpoint c2" cx="634.0" cy="65.4"></circle>
+        </svg>
+        <div class="chart-legend">
+          <span class="lg-item"><span class="sw c1"></span>case1_short</span>
+          <span class="lg-item"><span class="sw c2"></span>case2_long</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>지표 비교</h2>
+      <span class="tag">최종 10% 구간 평균 (동일 조건: lr 3e-4 · seed 1 · 10M steps · 다리폭0.175 재학습)</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>항목</th>
+            <th class="num">case1_short</th>
+            <th class="num">case2_long</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label">episode_length (평균 / 최댓값)</td>
+            <td class="num">222.0 / 296</td>
+            <td class="num win">281.5 / 534</td>
+          </tr>
+          <tr>
+            <td class="label">ep_rew_mean</td>
+            <td class="num">164.1</td>
+            <td class="num win">203.5</td>
+          </tr>
+          <tr>
+            <td class="label">forward reward (누적)</td>
+            <td class="num">77.7</td>
+            <td class="num win">98.1</td>
+          </tr>
+          <tr>
+            <td class="label">foot_collision (발-발 충돌)</td>
+            <td class="num win">0</td>
+            <td class="num">≈0</td>
+          </tr>
+          <tr>
+            <td class="label">joint_limit 페널티 (관절 한계 근접도)</td>
+            <td class="num win">−0.66</td>
+            <td class="num">−1.24</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="foot-note">굵게 표시된 값이 해당 항목의 우위. 학습 백엔드: 로컬 CPU(SB3 PPO), 발열 방지 20분 작업/7분 휴식 페이싱 — <span class="mono">scripts/train_stage1_local.py</span>, 두 후보 완전히 동일한 하이퍼파라미터. 이전(다리폭 0.15) 버전 결과는 case1 우위였다 — 아래 해석 참고.</p>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>해석</h2>
+    </div>
+    <div class="interp">
+      <p><b>순위가 뒤집혔다.</b> 다리 부착 규칙을 고치기 전(다리폭 0.15, hip_y=몸통 옆면)에는 case1_short(숏다리형)가 모든 지표에서 앞섰는데, 다리를 두껍게 하고(0.175) 몸통 안쪽으로 붙이는(돌출캡 0.01) 규칙으로 바꾸자 case2_long(롱다리형)이 역전했다 — episode_length 222.0 vs 281.5, ep_rew_mean 164.1 vs 203.5.</p>
+      <p>가능한 설명: case1(숏다리)은 다리 높이 대비 지름 비율이 88%로 이미 극단적으로 뭉툭한데, 다리가 두꺼워지고 좁은 스탠스로 더 몸 중심에 붙자 좌우 균형을 잡을 수 있는 여유가 오히려 줄었을 수 있다. 반대로 case2(롱다리)는 원래도 다리가 길어 두꺼워진 지름(3.4cm)이 상대적으로 부담이 적고, joint_limit 페널티가 여전히 case1보다 크긴 하지만(−1.24 vs −0.66) 절대적으로는 낮은 수준을 유지한다.</p>
+      <p>둘 다 최대 에피소드 길이(1000)에 도달하지 못해 미수렴 상태다. 지오메트리를 한 축(다리 부착 방식)만 바꿔도 몸 비율(case1 vs case2) 비교의 승자가 바뀐다는 건, <b>이 두 축이 서로 독립적이지 않다</b>는 뜻이라 — CLAUDE.md STAGE 1 원칙("한 번에 한 변수만 바꾼다")을 지키려면 이후 실험에서 이 둘을 분리해서 다시 봐야 할 수 있다.</p>
+      <p>발-발 충돌은 두 후보 모두 학습 내내 거의 발생하지 않았다 — 스탠스가 좁아졌음에도 이 항목은 여전히 제약으로 작동하지 않았다.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>STAGE 2 — 모방학습 오버레이 비교</h2>
+      <span class="tag">STAGE1 레퍼런스 vs STAGE2 mimic(10M스텝) · 같은 카메라 · 10초</span>
+    </div>
+    <p class="lede" style="margin-bottom:16px;">STAGE1에서 case1_short를 확정하고, 그 걷기를 레퍼런스로 모방학습(STAGE2)을 10M스텝 돌렸다. 아래는 두 영상을 같은 자리에 겹친 것 — 위쪽(STAGE2 결과)의 불투명도를 슬라이더로 조절해 얼마나 비슷하게 걷는지 직접 비교할 수 있다.</p>
+
+    <div class="overlay-card">
+      <div class="overlay-stage">
+        <video class="ov-base" id="ovRef" muted loop playsinline preload="metadata">
+          <source src="assets/legacy/shortlong_2.mp4" type="video/mp4">
+        </video>
+        <video class="ov-top" id="ovMimic" muted loop playsinline preload="metadata">
+          <source src="assets/legacy/shortlong_3.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="overlay-controls">
+        <label for="ovOpacity">STAGE2 정책 불투명도</label>
+        <input type="range" id="ovOpacity" min="0" max="100" value="50">
+        <span id="ovOpacityVal" class="mono">50%</span>
+        <button id="ovSync" type="button">동시 재생</button>
+      </div>
+      <div class="overlay-legend">
+        <span class="lg-item"><span class="sw" style="background:var(--part-torso)"></span>아래: STAGE1 레퍼런스(case1_short)</span>
+        <span class="lg-item"><span class="sw" style="background:var(--accent)"></span>위: STAGE2 모방학습(stage2_walk)</span>
+      </div>
+    </div>
+    <p class="foot-note">두 영상 다 같은 character.xml, 같은 카메라로 렌더링해 겹쳐도 비율이 어긋나지 않는다. STAGE2 쪽은 레퍼런스 프레임 5부터 시작한다 — frame 0(진짜 첫 프레임)에서 시작하면 이 정책이 31스텝 만에 낙상하는데 frame 5 이상에서는 970프레임 가까이 안정적으로 완주한다(같은 정책, 시작점만 다름). STAGE3 이전에 재확인할 만한 포인트로 남겨둔다.</p>
+  </section>
+
+  <footer>
+    <div><span class="fk">체크포인트</span> · logs/checkpoints/stage1_local/{case1_short, case2_long}/final_model.zip · logs/checkpoints/stage2_local/stage2_walk/final_model.zip</div>
+    <div><span class="fk">텐서보드</span> · logs/tb/stage1_local/{case1_short, case2_long}_0 (구버전 이벤트파일 혼재, pid 308060/337545가 최신) · logs/tb/stage2_local/stage2_walk_0</div>
+    <div><span class="fk">모델</span> · models/character.xml(=case1_short 확정본) · models/smoke_case2.xml(보류)</div>
+    <div><span class="fk">레퍼런스</span> · references/stage1_walk.npz (qpos/qvel/foot_contact, 1001프레임)</div>
+    <div><span class="fk">다음 단계</span> · STAGE 3(목 정책입력화 + 팔·LCD 분리) 착수 여부 — 사용자 요청 시에만 진행</div>
+  </footer>
+
+</div>
+
+<script>
+  (function () {
+    var ref = document.getElementById('ovRef');
+    var mimic = document.getElementById('ovMimic');
+    var slider = document.getElementById('ovOpacity');
+    var val = document.getElementById('ovOpacityVal');
+    var syncBtn = document.getElementById('ovSync');
+    if (ref && mimic && slider) {
+      slider.addEventListener('input', function () {
+        mimic.style.opacity = (Number(slider.value) / 100).toString();
+        val.textContent = slider.value + '%';
+      });
+      if (syncBtn) {
+        syncBtn.addEventListener('click', function () {
+          try { ref.currentTime = 0; mimic.currentTime = 0; } catch (e) {}
+          var p1 = ref.play(); if (p1 && p1.catch) p1.catch(function () {});
+          var p2 = mimic.play(); if (p2 && p2.catch) p2.catch(function () {});
+        });
+      }
+    }
+  })();
+</script>
+
+<script>
+  (function () {
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) return;
+    document.querySelectorAll('video[data-autoplay="1"]').forEach(function (v) {
+      var p = v.play();
+      if (p && p.catch) p.catch(function () {});
+    });
+  })();
+</script>
+
+</body></html>
