@@ -26,3 +26,17 @@ CLAUDE.md STAGE 0 절이 두 가지를 동시에 요구하는 것처럼 읽힌�
 **사용자 답변**: "디자인은 모양을 말하는 거지, 크기를 말하는게 아니니까 전체 높이를 만들어도 좋아." — 숫자(크기)는 디자인 금지 대상이 아님. 형태(모양)만 금지 대상.
 
 **결과**: `robot_spec.md` §9, `logs/progress.md` 절대 크기 표에 전체 높이 40cm 등 STAGE 0 임시값을 기입함.
+
+---
+
+## WSL2 → Windows 이전 후 CLAUDE.md 갱신 제안 — 2026-08-26 답변 완료
+
+**요약**: WSL2에서 네이티브 Windows로 프로젝트를 옮긴 뒤 (1) CLAUDE.md 상단 "현재 단계" 블록이 STAGE 1로 낡아 있고 (2) CLAUDE.md의 "OS: WSL2 (Ubuntu 24.04) + conda" 항목이 사실과 달라짐 — 두 건 모두 갱신 제안.
+
+**사용자 답변**: 두 제안 모두 승인 — "CLAUDE.md 갱신"·"environment.yml Windows용 재작성" 진행 지시.
+
+**결과**:
+- `CLAUDE.md`의 "현재 단계" 블록을 `logs/progress.md` 상단과 동일하게 `현재 STAGE : 2 (통과, 2026-08-23)` / `다음 목표 : 사용자 판단 대기 — STAGE 3 착수 여부` / `차단 요인 : 없음`으로 갱신.
+- `CLAUDE.md`의 OS 항목을 `네이티브 Windows + conda`로 갱신.
+- `environment.yml`(WSL2 conda env export, 리눅스 전용 풀 락파일)을 리눅스 시스템 라이브러리·CUDA 리눅스 휠을 제거한 Windows용 최소 구성으로 재작성(별도 커밋).
+- 참고(이번 범위 밖): `logs/checkpoints/`·`logs/tb/`는 `.gitignore` 대상이라 이전 과정에서 로컬에 남지 않음 — 과거 학습 산출물(체크포인트·텐서보드) 유실 확인. 재학습 필요 여부는 추후 판단.

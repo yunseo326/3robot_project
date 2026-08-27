@@ -35,7 +35,7 @@
 | 형태 | 큰 LCD 머리 + 작은 몸통 + 짧고 두꺼운 평발 다리 + 뭉뚝한 팔 (`docs/robot_spec.md`) |
 | 목표 동작 | ① 걷기 등 이동 ② 앉기·인사·고개갸웃 같은 트리거형 동작 |
 | 환경 | 시뮬레이션 전용. 실기 배포 없음 |
-| OS | WSL2 (Ubuntu 24.04) + conda |
+| OS | 네이티브 Windows + conda |
 | 시뮬레이터 | MuJoCo / MJX / MuJoCo Playground. LocoMuJoCo 사용 가능 |
 | 금지 시뮬레이터 | Isaac Lab, Isaac Sim (사양 미달) |
 | 연산 | `google-colab-cli`로 원격 T4 접속. 무료 티어만 |
@@ -52,9 +52,9 @@
 작업 시작 전 이 블록을 읽고, STAGE 완료 시 갱신한다.
 
 ```
-현재 STAGE : 1
-다음 목표   : 1-A1 발목 유무 후보 A(발목 없음+롤오버 밑창)/B(발목 pitch) MJCF 작성 및 순수 RL 비교
-차단 요인   : 없음 (단, robot_spec.md §9 절대 크기는 아직 미정 — STAGE 1 착수 전 확정 필요)
+현재 STAGE : 2 (통과, 2026-08-23)
+다음 목표   : 사용자 판단 대기 — STAGE 3(목 정책입력화 + 팔·LCD 분리) 착수 여부
+차단 요인   : 없음
 ```
 
 ---
