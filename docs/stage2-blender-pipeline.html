@@ -249,6 +249,47 @@
   아직 다 배운 상태는 아니고, 상승 추세만 확인한 것.)
 </div>
 
+<h2>정식 학습 (10M 스텝 목표, 8,799,912 스텝에서 중단)</h2>
+<p>
+  스모크 결과가 좋아서 정식 규모(10M 스텝)로 이어서 돌렸다. 도중에 세션에 딸린
+  백그라운드 작업이 원인 불명으로 두 번 죽어서, 세션과 완전히 분리된 프로세스로
+  띄워 재시도했다. 이번엔 죽지는 않았지만 Windows가 화면에 안 보이는(hidden)
+  백그라운드 프로세스를 점점 저전력으로 묶어두는 것으로 보이는 현상 때문에 진행
+  속도가 크게 떨어졌다 — 관리자 권한 없이는 완전히 못 풀어서, <strong>88%
+  지점(8,799,912 / 10,000,000 스텝)의 체크포인트에서 학습을 중단</strong>하고
+  그 결과를 남긴다.
+</p>
+<div class="card">
+  <video src="assets/blender_walk_rollout.mp4" controls muted loop></video>
+  <p class="video-caption">
+    실제 물리 시뮬레이션 롤아웃(kinematic replay 아님) — 88% 학습된 정책이
+    레퍼런스 frame 5부터 시작해 결정적(deterministic)으로 움직인 것. 69스텝(약
+    1.4초)만에 넘어짐 — 미완주.
+  </p>
+</div>
+<div class="card">
+  <table>
+    <thead>
+      <tr><th>지표</th><th class="num">12k</th><th class="num">25%</th><th class="num">50%</th><th class="num">75%</th><th class="num">8.9M(중단 시점)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>episode_length</td><td class="num">20.6</td><td class="num">44.1</td><td class="num">47.3</td><td class="num">49.6</td><td class="num">54.1</td></tr>
+      <tr><td>imitation_leg_pose</td><td class="num">0.156</td><td class="num">1.92</td><td class="num">2.04</td><td class="num">2.16</td><td class="num">2.30</td></tr>
+      <tr><td>imitation_root_pos</td><td class="num">2.93</td><td class="num">6.19</td><td class="num">6.55</td><td class="num">6.91</td><td class="num">7.40</td></tr>
+      <tr><td>imitation_root_ori</td><td class="num">2.00</td><td class="num">4.39</td><td class="num">4.83</td><td class="num">5.23</td><td class="num">5.52</td></tr>
+    </tbody>
+  </table>
+</div>
+<div class="note">
+  <strong>해석</strong>: 8.9M스텝까지 전 구간 정체 없이 계속 상승 — 스모크와 같은
+  건강한 패턴이 정식 규모에서도 이어졌다. 다만 episode_length가 54.1로 레퍼런스
+  전체 길이(415프레임)에 한참 못 미쳐 아직 미수렴 상태이고, 실제 롤아웃도 69스텝
+  만에 넘어진다 — <strong>"동작을 배울 수 있다"는 스모크 결론은 유지되지만,
+  10M을 다 채우지 못해 "완주하는 정책"까지는 아직 못 갔다.</strong> 남은 12%를
+  마저 돌리거나(전원 스로틀링 문제 해결 후), 자기충돌 자체를 해소(스탠스 재설계)
+  하고 처음부터 다시 돌리는 게 다음 후보.
+</div>
+
 <h2>남은 일</h2>
 <ul>
   <li><code>scripts/check_feasibility.py</code>(CLAUDE.md가 요구하는 5개 사전검사 통합본)가
