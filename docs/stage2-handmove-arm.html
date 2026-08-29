@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3robot STAGE2 — 팔 스윙 모방학습 원인 규명</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #161a21;
+    --panel-border: #262c36;
+    --text: #e8eaed;
+    --text-dim: #9aa4b2;
+    --accent: #6ee7b7;
+    --accent-dim: #2f6f57;
+    --bad: #f87171;
+    --bad-dim: #4a2323;
+    --warn: #fbbf24;
+    --warn-dim: #4a3b16;
+    --good: #4ade80;
+    --code-bg: #0b0d11;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --panel-border: #e2e5ea;
+      --text: #1a1d23;
+      --text-dim: #5b6472;
+      --accent: #0f9d68;
+      --accent-dim: #d6f5e8;
+      --bad: #c0392b;
+      --bad-dim: #fbe0dd;
+      --warn: #9a6c00;
+      --warn-dim: #fdf0d0;
+      --good: #1e9e5c;
+      --code-bg: #eef0f3;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    line-height: 1.65;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px 96px; }
+  header { margin-bottom: 40px; }
+  h1 { font-size: 1.9rem; margin: 0 0 8px; letter-spacing: -0.01em; }
+  .subtitle { color: var(--text-dim); font-size: 1rem; }
+  .meta { color: var(--text-dim); font-size: 0.85rem; margin-top: 12px; }
+  h2 {
+    font-size: 1.3rem; margin: 56px 0 16px; padding-top: 8px;
+    border-top: 1px solid var(--panel-border);
+  }
+  h2:first-of-type { border-top: none; margin-top: 0; }
+  h3 { font-size: 1.05rem; margin: 28px 0 10px; color: var(--text); }
+  p { margin: 0 0 14px; }
+  a { color: var(--accent); }
+  code {
+    background: var(--code-bg); padding: 2px 6px; border-radius: 4px;
+    font-size: 0.9em; font-family: "SF Mono", Consolas, monospace;
+  }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--panel-border);
+    border-radius: 8px; padding: 14px 16px; overflow-x: auto;
+    font-size: 0.85rem; font-family: "SF Mono", Consolas, monospace;
+  }
+  .card {
+    background: var(--panel); border: 1px solid var(--panel-border);
+    border-radius: 12px; padding: 20px 22px; margin: 16px 0;
+  }
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+  video { width: 100%; border-radius: 8px; display: block; background: #000; }
+  .video-caption { font-size: 0.85rem; color: var(--text-dim); margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; margin: 12px 0; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--panel-border); }
+  th { color: var(--text-dim); font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.final td { background: var(--accent-dim); font-weight: 600; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600;
+  }
+  .badge.pass { background: var(--accent-dim); color: var(--good); }
+  .badge.fail { background: var(--bad-dim); color: var(--bad); }
+  .badge.warn { background: var(--warn-dim); color: var(--warn); }
+  .note {
+    border-left: 3px solid var(--warn); padding: 10px 16px; background: var(--warn-dim);
+    border-radius: 0 8px 8px 0; font-size: 0.92rem; color: var(--text);
+  }
+  .note.good { border-left-color: var(--good); background: var(--accent-dim); }
+  .note.bad { border-left-color: var(--bad); background: var(--bad-dim); }
+  .check-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--panel-border); gap: 16px; }
+  .check-row:last-child { border-bottom: none; }
+  .check-name { font-weight: 500; }
+  .check-detail { color: var(--text-dim); font-size: 0.85rem; }
+  footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--panel-border); color: var(--text-dim); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<style>
+  .back-nav {
+    position: fixed; top: 16px; left: 16px; z-index: 999;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 999px;
+    background: rgba(20,22,26,0.72); color: #e8eaed;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.12);
+    font-family: -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+    font-size: 0.85rem; text-decoration: none; box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    transition: background 0.15s;
+  }
+  .back-nav:hover { background: rgba(20,22,26,0.9); }
+  @media (prefers-color-scheme: light) {
+    .back-nav { background: rgba(255,255,255,0.85); color: #1a1d23; border-color: rgba(0,0,0,0.08); }
+    .back-nav:hover { background: rgba(255,255,255,0.98); }
+  }
+</style>
+<a class="back-nav" href="index.html">&larr; STAGE 목록</a>
+<div class="wrap">
+
+<header>
+  <h1>팔 스윙 모방학습 — 원인 규명 및 수정</h1>
+  <p class="subtitle">3robot_project · STAGE 2 부속 실험(임시 검증, character.xml·STAGE 상태 불변)</p>
+  <p class="meta">2026-08-28 ~ 08-29 · 종료(사용자 확정) · 다음 후속은 STAGE 3(목 관절 도입)에서</p>
+</header>
+
+<h2>배경</h2>
+<p>
+  간단한 오른팔 어깨 스윙 동작(<code>npz_handmove_test_ver2_with_r.csv</code>)으로 STAGE2
+  모방학습 파이프라인의 스모크 테스트를 진행하던 중, 사용자가 "로봇 팔이 진동하며 제대로
+  움직이지 못한다"고 보고했다. 이 페이지는 그 원인을 추적하는 과정에서 실제로는 <strong>서로
+  다른 세 가지 문제</strong>가 겹쳐 있었음을 밝히고, 각각을 어떻게 고쳤는지 정리한다. 팔은
+  아직 정식 STAGE3(목 관절 도입 + 팔·LCD 분리) 이전이라 <code>_viz_arms_temp.xml</code>이라는
+  임시 시각화 모델로만 실험했고, STAGE2가 확정한 <code>character.xml</code>(다리만)과 걷기
+  결과는 이 실험으로 전혀 바뀌지 않는다.
+</p>
+
+<h2>원인 1 — 참조 데이터의 팔꿈치 축 추정 노이즈</h2>
+<p>
+  최초 변환 스크립트(<code>convert_handmove_to_npz.py</code>)는 팔꿈치 굽힘축을
+  <code>cross(위팔방향, 아래팔방향)</code>으로 추정했다. 이 동작은 팔꿈치를 편 채(≈0°)
+  어깨만 움직이므로 두 벡터가 거의 평행해지는 구간이 많아, 외적이 구조적으로 불안정해진다 —
+  실제로는 거의 0인 팔꿈치 각도가 413스텝 중 104번이나 부호가 뒤집혔다.
+</p>
+<div class="card">
+  <div class="check-row">
+    <div>
+      <div class="check-name">해결책</div>
+      <div class="check-detail">
+        본마다 world-space rotation quaternion을 직접 export(<code>blender/export_bones_with_rotation.py</code>)받아
+        축 추정 없이 <code>rest⁻¹·world(t)</code>로 관절회전만 분리(<code>convert_handmove_to_npz_v2.py</code>)
+      </div>
+    </div>
+    <span class="badge pass">해결</span>
+  </div>
+  <div class="check-row">
+    <div>
+      <div class="check-name">검증</div>
+      <div class="check-detail">
+        팔꿈치 각도 프레임간 노이즈 0.00984rad → 0.00000rad(약 5자리수 감소), round-trip 방향벡터 오차 0.027°
+      </div>
+    </div>
+    <span class="badge pass">PASS</span>
+  </div>
+</div>
+
+<h2>원인 2 — leg_pose/arm_pose 보상 혼합</h2>
+<p>
+  <code>envs/biped_mimic_gym.py</code>의 <code>leg_pose_err = sum((qpos[7:]-target_qpos[7:])**2)</code>는
+  원래 <code>character.xml</code>(다리 8DOF만)을 염두에 두고 "루트를 뺀 나머지 관절 전부"를
+  하나의 오차항으로 묶었다. 이걸 다리 8 + 팔 8 = 16DOF인 <code>_viz_arms_temp.xml</code>에
+  그대로 재사용하면서, 다리용으로 튜닝된 감쇠상수(<code>K_LEG_POSE=2.0</code>)가 팔의 큰
+  스윙 오차까지 흡수해 <code>exp(-2.0×err)</code>가 거의 0으로 죽어버렸다. CLAUDE.md가
+  STAGE3에서 "다리와 목의 가중치를 반드시 분리한다"고 못박은 것과 정확히 같은 종류의 문제가
+  팔 버전에서 먼저 재현된 셈이다.
+</p>
+<div class="card">
+  <div class="check-row">
+    <div>
+      <div class="check-name">해결책</div>
+      <div class="check-detail">
+        관절 이름(<code>shoulder</code>/<code>elbow</code> 포함 여부) 기반으로 다리·팔 DOF 인덱스를
+        분리, <code>imitation_leg_pose</code>와 별도로 <code>imitation_arm_pose</code>/<code>arm_vel</code>
+        독립 항 신설(가중치 각 0.35/0.10, 다리와 동일 비중)
+      </div>
+    </div>
+    <span class="badge pass">해결</span>
+  </div>
+  <div class="check-row">
+    <div>
+      <div class="check-name">STAGE2 걷기 영향</div>
+      <div class="check-detail">
+        <code>character.xml</code>은 팔 관절이 없어 arm 인덱스가 항상 빈 배열 → arm_pose/arm_vel 보상 항상 0
+      </div>
+    </div>
+    <span class="badge pass">영향 없음(재확인 완료)</span>
+  </div>
+</div>
+
+<h2>원인 3 — 전 관절 공용 action_scale 캡</h2>
+<p>
+  두 원인을 고치고 10M스텝을 재학습(<code>handmove_arm_full_v2</code>)했더니 reward는
+  정체 없이 올랐지만(-1.75→74.0), 실제 롤아웃은 여전히 65~68/415스텝에서 낙상했다. 관절각을
+  직접 뽑아보고서야 발견했다 — 오른쪽 어깨가 스텝 5 이후 <strong>정확히 17.19°에서 완전히
+  얼어붙은 채</strong> 에피소드 끝까지 전혀 안 움직이고 있었다(레퍼런스는 0°→77°).
+</p>
+<p>
+  17.19° = 0.3rad. <code>ctrl = default_pose + action·ACTION_SCALE</code>에서
+  <code>ACTION_SCALE=0.3rad</code>이 <strong>전 관절 공용</strong>이었던 게 원인이다.
+  <code>action∈[-1,1]</code>이므로 어떤 관절이든 기본자세 대비 최대 0.3rad까지만 명령
+  가능 — 정책이 action=+1로 올바르게 포화됐어도 애초에 그 이상 낼 방법이 없었다. 다리는
+  걷기 동작이 정지자세 대비 ±20~30° 안쪽이라 문제없었지만, 이 팔 동작(목표 77°)은 처음부터
+  이 상한에 걸릴 수밖에 없었다 — <strong>보상 설계 문제가 아니라 행동공간(action space) 자체의
+  한계</strong>였다.
+</p>
+<div class="card">
+  <div class="check-row">
+    <div>
+      <div class="check-name">해결책</div>
+      <div class="check-detail">
+        <code>BipedMimicGym</code>에 <code>arm_action_scale</code> 파라미터 신설(관절별 벡터화,
+        원인 2에서 만든 인덱스 재사용) — 다리는 검증된 0.3rad 유지, 팔만 1.6rad
+      </div>
+    </div>
+    <span class="badge pass">해결</span>
+  </div>
+  <div class="check-row">
+    <div>
+      <div class="check-name">부수 개선</div>
+      <div class="check-detail">
+        <code>train_stage2_local.py</code>에 <code>--resume-from</code> 추가 — 체크포인트에서
+        <code>num_timesteps</code>까지 그대로 이어 학습 가능(이전엔 매번 처음부터만 가능했음)
+      </div>
+    </div>
+    <span class="badge pass">완료</span>
+  </div>
+</div>
+
+<h2>측면(az=0) 카메라로 본 비교</h2>
+<p>
+  이 동작은 어깨 <em>yaw</em>(수직축 회전 = 수평면 스윙)라, STAGE1/2 걷기용으로 고정해둔
+  정면 카메라(az=90)에서는 스윙 방향이 시선과 거의 평행해 거의 안 보인다. 아래는 측면(az=0)에서
+  다시 찍은 것 — 정지한 팔은 카메라를 향해 숨고, 움직이는 팔만 옆으로 튀어나와 스윙이 뚜렷하다.
+</p>
+<div class="grid">
+  <div class="card">
+    <video src="assets/handmove_reference_az0.mp4" controls muted loop></video>
+    <p class="video-caption"><strong>레퍼런스</strong> — 목표: 오른쪽 어깨 0°→77°, 415프레임 내내 안정.</p>
+  </div>
+  <div class="card">
+    <video src="assets/handmove_v2_frozen_policy_az0.mp4" controls muted loop></video>
+    <p class="video-caption"><strong>수정 전(v2)</strong> — 스텝 5 이후 17.19°에서 완전히 정지. 안 넘어져서 겉보기엔 안정적으로 보였다.</p>
+  </div>
+  <div class="card">
+    <video src="assets/handmove_v3_final_policy_az0.mp4" controls muted loop></video>
+    <p class="video-caption"><strong>수정 후(v3, 10M)</strong> — 큰 각도까지 실제로 움직이지만, 너무 이른 타이밍에 휘둘러 46/415스텝에서 낙상.</p>
+  </div>
+</div>
+
+<h2>학습 이력 전체</h2>
+<div class="card">
+  <table>
+    <thead>
+      <tr><th>라벨</th><th class="num">스텝</th><th class="num">ep_rew_mean</th><th class="num">ep_len_mean</th><th>비고</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>handmove_arm_smoke_v2</code></td><td class="num">300K</td>
+        <td class="num">13.3</td><td class="num">—</td>
+        <td>레퍼런스 노이즈 수정(원인 1) 검증용 스모크, PASS</td>
+      </tr>
+      <tr>
+        <td><code>handmove_arm_full_v2</code></td><td class="num">10M</td>
+        <td class="num">331</td><td class="num">206</td>
+        <td>reward는 정체 없이 상승했지만 실제론 팔이 17.19°에 얼어붙은 채였음(원인 3 미발견 상태)</td>
+      </tr>
+      <tr>
+        <td><code>handmove_arm_full_v3</code></td><td class="num">3M</td>
+        <td class="num">56</td><td class="num">44.7</td>
+        <td>action_scale 수정 직후 — 팔은 크게 움직이나 41스텝에서 낙상</td>
+      </tr>
+      <tr class="final">
+        <td><code>handmove_arm_full_v3</code> (resume)</td><td class="num">10M</td>
+        <td class="num">68.7</td><td class="num">47.9</td>
+        <td>최종 상태 — 8.3M 부근에서 정체, 46스텝 낙상. 원인(아래) 기록 후 종료</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="note">
+  <strong>주의</strong>: v2(10M)의 ep_len 206이 v3(10M)의 47.9보다 훨씬 높아 보이지만, v2는
+  팔이 얼어붙어 애초에 위험을 감수하지 않았기 때문이다 — 더 안정적인 게 아니라 더 안 움직인
+  것이라 같은 기준으로 비교할 수 없다.
+</div>
+
+<h2>남은 이슈 — K_ARM_POSE 타이밍 민감도 (미해결)</h2>
+<p>
+  팔이 이제 물리적으로는 목표까지 갈 수 있지만, 정책은 레퍼런스가 아직 0°대인 스텝 0~5부터
+  먼저 50~70°까지 팔을 휘두른다. 감쇠상수 <code>K_ARM_POSE=0.4</code>가 다리
+  (<code>K_LEG_POSE=2.0</code>)보다 훨씬 부드러워, 조기 오버슈트에도
+  <code>exp(-0.4×60°²)≈0.65</code>의 높은 부분점수를 줘 "제때 움직여라"는 압력이 약하다.
+</p>
+<div class="note bad">
+  <strong>종료 결정</strong>: 이 이슈는 진단만 하고 손대지 않았다 — 사용자 확정으로 여기서
+  임시 검증을 종료. STAGE3에서 목 관절을 정책 입력으로 도입할 때 유사한 보상 튜닝(다리·목
+  가중치 분리)이 어차피 필요하므로 그때 함께 다룬다.
+</div>
+
+<h2>결론</h2>
+<p>
+  사용자가 처음 보고한 "떨림"에는 서로 다른 세 가지 원인이 섞여 있었다 — 참조 데이터 노이즈,
+  보상 혼합, 행동공간 캡. 셋 다 코드 차원에서 고쳤고 재사용 가능한 형태(<code>arm_action_scale</code>,
+  leg/arm 보상 분리, <code>--resume-from</code>)로 남겼다. 네 번째로 발견한 타이밍 민감도
+  문제는 기록만 남기고 이번 실험을 종료했다. STAGE 진행상황(현재 STAGE 2 통과)은 이 실험으로
+  변경되지 않는다.
+</p>
+
+<footer>
+  3robot_project · <a href="https://github.com/yunseo326/3robot_project">GitHub 저장소</a>
+</footer>
+
+</div>
+</body>
+</html>
