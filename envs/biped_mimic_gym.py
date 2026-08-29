@@ -47,16 +47,25 @@ LIMIT_SCALES = dict(foot_collision=-1.0, joint_limit=-1.0)
 # root(10.0) 값을 그대로 가져오고, root_pos/lin_vel/ang_vel은 신규 추정치.
 K_LEG_POSE = 2.0
 K_LEG_VEL = 0.1
+# 팔(어깨·팔꿈치)은 leg_pose와 별도 항목 — CLAUDE.md STAGE3 "다리와 목의 가중치를
+# 반드시 분리한다" 원칙을 팔에도 동일 적용(모델에 shoulder/elbow 관절이 있을 때만
+# 활성화됨, __init__ 참고). 다리(±30°대)용으로 튜닝된 K_LEG_POSE=2.0을 어깨 스윙
+# (최대 ~90°대)에 그대로 쓰면 오차 제곱합이 빠르게 커져 보상이 0으로 죽는다 — 실측
+# (handmove_arm_full, 2026-08-29): imitation_leg_pose만 학습 내내 ~0으로 정체.
+K_ARM_POSE = 0.4
+K_ARM_VEL = 0.1
 K_ROOT_POS = 20.0
 K_ROOT_ORI = 10.0
 K_LIN_VEL = 1.0
 K_ANG_VEL = 1.0
 
 # imitation 가중합 — 다리 비중을 가장 크게(CLAUDE.md: "다리와 목의 가중치를 반드시
-# 분리한다" — 지금은 목이 없어 다리만). survival은 정규화된 가중치 풀과 별개로
-# 매 스�텝 고정 가산(STAGE1의 s.survival=0.5와 동일 취지).
+# 분리한다"). survival은 정규화된 가중치 풀과 별개로 매 스텝 고정 가산(STAGE1의
+# s.survival=0.5와 동일 취지). arm_pose/arm_vel은 팔 관절이 있는 모델에서만 0이
+# 아닌 값을 갖는다(다리와 대칭적으로 동일 비중 부여).
 IMITATION_WEIGHTS = dict(
-    leg_pose=0.35, leg_vel=0.10, root_pos=0.15, root_ori=0.15,
+    leg_pose=0.35, leg_vel=0.10, arm_pose=0.35, arm_vel=0.10,
+    root_pos=0.15, root_ori=0.15,
     lin_vel_xy=0.05, lin_vel_z=0.05, ang_vel_xy=0.05, ang_vel_z=0.05,
     foot_contact=0.05,
 )
@@ -82,7 +91,8 @@ class BipedMimicGym(gym.Env):
     metadata = {"render_modes": []}
 
     def __init__(self, reference_path, model_path="models/character.xml",
-                 min_episode_len=30, use_rsi=True):
+                 min_episode_len=30, use_rsi=True, fall_geom_names=None,
+                 action_scale=ACTION_SCALE, arm_action_scale=None):
         self.model = mujoco.MjModel.from_xml_path(model_path)
         self.model.opt.timestep = SIM_DT
         self.data = mujoco.MjData(self.model)
@@ -104,13 +114,46 @@ class BipedMimicGym(gym.Env):
         self.joint_lo = self.model.jnt_range[1:, 0].copy()
         self.joint_hi = self.model.jnt_range[1:, 1].copy()
 
+        # 다리 vs 팔 DOF 분리 (관절 이름 기반, 모델에 무관하게 동작).
+        # character.xml(STAGE2, 다리만)에서는 arm 인덱스가 빈 배열이 되어 arm_pose/
+        # arm_vel 보상이 항상 0으로 꺼진다 — 기존 STAGE2 walk 학습 결과에 영향 없음.
+        leg_qpos_idx, arm_qpos_idx = [], []
+        leg_dof_idx, arm_dof_idx = [], []
+        for j in range(1, self.model.njnt):  # 0번(root free joint) 제외
+            name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_JOINT, j) or ""
+            qadr = self.model.jnt_qposadr[j] - 7
+            dadr = self.model.jnt_dofadr[j] - 6
+            if "shoulder" in name or "elbow" in name:
+                arm_qpos_idx.append(qadr)
+                arm_dof_idx.append(dadr)
+            else:
+                leg_qpos_idx.append(qadr)
+                leg_dof_idx.append(dadr)
+        self._leg_qpos_idx = np.array(leg_qpos_idx, dtype=int)
+        self._arm_qpos_idx = np.array(arm_qpos_idx, dtype=int)
+        self._leg_dof_idx = np.array(leg_dof_idx, dtype=int)
+        self._arm_dof_idx = np.array(arm_dof_idx, dtype=int)
+
+        # ctrl = default_pose + action*action_scale로 매 스텝 절대 목표각을 정하므로,
+        # default_pose 대비 action_scale보다 큰 편차는 policy가 action=±1을 내도 원리적으로
+        # 낼 수 없다. STAGE2 걷기(기본값 0.3rad≈17°)는 다리 range로 충분했지만, 팔 실험
+        # (handmove_arm_full_v2)에서 어깨 yaw가 목표 77°까지 못 가고 정확히 17.19°(=0.3rad)
+        # 에서 얼어붙는 문제를 발견 — 원인이 보상(K_ARM_POSE)이 아니라 이 캡이었다. 다리는
+        # 이미 검증된 0.3rad을 그대로 유지하고 팔에만 arm_action_scale을 별도로 줄 수 있게
+        # 관절 인덱스(qpos[7:] 인덱스 == 이 코드베이스에서 actuator 인덱스와 이미 동일하게
+        # 취급됨, default_pose/action이 전부 이 순서로 브로드캐스트되므로) 기준으로 벡터화한다.
+        self.action_scale = np.full(self.nu, action_scale, dtype=float)
+        if arm_action_scale is not None and len(self._arm_qpos_idx):
+            self.action_scale[self._arm_qpos_idx] = arm_action_scale
+
         def gid(name):
             return mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, name)
 
-        fall_geom_names = [
-            "head_geom", "torso_geom", "l_arm_geom", "r_arm_geom",
-            "l_thigh_geom", "r_thigh_geom",
-        ]
+        if fall_geom_names is None:
+            fall_geom_names = [
+                "head_geom", "torso_geom", "l_arm_geom", "r_arm_geom",
+                "l_thigh_geom", "r_thigh_geom",
+            ]
         self.fall_geom_ids = np.array([gid(n) for n in fall_geom_names])
 
         all_geom_names = [
@@ -232,7 +275,7 @@ class BipedMimicGym(gym.Env):
 
     def step(self, action):
         action = np.clip(action, -1.0, 1.0)
-        ctrl = self.default_pose + action * ACTION_SCALE
+        ctrl = self.default_pose + action * self.action_scale
         ctrl = np.clip(ctrl, self.joint_lo, self.joint_hi)
         self.data.ctrl[:] = ctrl
         for _ in range(self.n_substeps):
@@ -243,8 +286,17 @@ class BipedMimicGym(gym.Env):
         target_qpos, target_qvel, target_foot, target_upvec = self._target(self.frame_idx)
 
         # ---- imitation ----
-        leg_pose_err = float(np.sum((self.data.qpos[7:] - target_qpos[7:]) ** 2))
-        leg_vel_err = float(np.sum((self.data.qvel[6:] - target_qvel[6:]) ** 2))
+        cur_pose = self.data.qpos[7:]
+        tgt_pose = target_qpos[7:]
+        cur_vel = self.data.qvel[6:]
+        tgt_vel = target_qvel[6:]
+        leg_pose_err = float(np.sum((cur_pose[self._leg_qpos_idx] - tgt_pose[self._leg_qpos_idx]) ** 2))
+        leg_vel_err = float(np.sum((cur_vel[self._leg_dof_idx] - tgt_vel[self._leg_dof_idx]) ** 2))
+        if len(self._arm_qpos_idx):
+            arm_pose_err = float(np.sum((cur_pose[self._arm_qpos_idx] - tgt_pose[self._arm_qpos_idx]) ** 2))
+            arm_vel_err = float(np.sum((cur_vel[self._arm_dof_idx] - tgt_vel[self._arm_dof_idx]) ** 2))
+        else:
+            arm_pose_err = arm_vel_err = 0.0
         root_pos_err = float(np.sum((self.data.qpos[0:2] - target_qpos[0:2]) ** 2))
         quat_align = np.clip(abs(np.dot(self.data.qpos[3:7], target_qpos[3:7])), 0.0, 1.0)
         root_ori_err = 1.0 - quat_align ** 2
@@ -259,6 +311,11 @@ class BipedMimicGym(gym.Env):
         w = IMITATION_WEIGHTS
         r_leg_pose = w["leg_pose"] * np.exp(-K_LEG_POSE * leg_pose_err)
         r_leg_vel = w["leg_vel"] * np.exp(-K_LEG_VEL * leg_vel_err)
+        if len(self._arm_qpos_idx):
+            r_arm_pose = w["arm_pose"] * np.exp(-K_ARM_POSE * arm_pose_err)
+            r_arm_vel = w["arm_vel"] * np.exp(-K_ARM_VEL * arm_vel_err)
+        else:
+            r_arm_pose = r_arm_vel = 0.0
         r_root_pos = w["root_pos"] * np.exp(-K_ROOT_POS * root_pos_err)
         r_root_ori = w["root_ori"] * np.exp(-K_ROOT_ORI * root_ori_err)
         r_lin_vel_xy = w["lin_vel_xy"] * np.exp(-K_LIN_VEL * lin_vel_xy_err)
@@ -291,7 +348,8 @@ class BipedMimicGym(gym.Env):
         self._prev_foot_z = foot_z
         self._prev_foot_contact = cur_foot
 
-        reward = (r_leg_pose + r_leg_vel + r_root_pos + r_root_ori + r_lin_vel_xy
+        reward = (r_leg_pose + r_leg_vel + r_arm_pose + r_arm_vel
+                  + r_root_pos + r_root_ori + r_lin_vel_xy
                   + r_lin_vel_z + r_ang_vel_xy + r_ang_vel_z + r_foot_contact + r_survival
                   + r_torque + r_action_rate + r_action_acc
                   + r_joint_limit + r_foot_collision + r_impact)
@@ -305,6 +363,8 @@ class BipedMimicGym(gym.Env):
         info = {
             "reward_imitation_leg_pose": float(r_leg_pose),
             "reward_imitation_leg_vel": float(r_leg_vel),
+            "reward_imitation_arm_pose": float(r_arm_pose),
+            "reward_imitation_arm_vel": float(r_arm_vel),
             "reward_imitation_root_pos": float(r_root_pos),
             "reward_imitation_root_ori": float(r_root_ori),
             "reward_imitation_lin_vel_xy": float(r_lin_vel_xy),
@@ -326,7 +386,9 @@ class RewardComponentWrapper(gym.Wrapper):
     누적값+길이를 info에 담는다."""
 
     REWARD_KEYS = (
-        "imitation_leg_pose", "imitation_leg_vel", "imitation_root_pos", "imitation_root_ori",
+        "imitation_leg_pose", "imitation_leg_vel",
+        "imitation_arm_pose", "imitation_arm_vel",
+        "imitation_root_pos", "imitation_root_ori",
         "imitation_lin_vel_xy", "imitation_lin_vel_z", "imitation_ang_vel_xy",
         "imitation_ang_vel_z", "imitation_foot_contact", "imitation_survival",
         "regularization", "limits_joint", "limits_foot_collision", "impact",
@@ -356,10 +418,13 @@ class RewardComponentWrapper(gym.Wrapper):
 
 
 def make_biped_mimic_env(reference_path, model_path="models/character.xml",
-                          min_episode_len=30, use_rsi=True):
+                          min_episode_len=30, use_rsi=True, fall_geom_names=None,
+                          action_scale=ACTION_SCALE, arm_action_scale=None):
     def _make():
         env = BipedMimicGym(reference_path, model_path=model_path,
-                             min_episode_len=min_episode_len, use_rsi=use_rsi)
+                             min_episode_len=min_episode_len, use_rsi=use_rsi,
+                             fall_geom_names=fall_geom_names, action_scale=action_scale,
+                             arm_action_scale=arm_action_scale)
         env = RewardComponentWrapper(env)
         return env
     return _make

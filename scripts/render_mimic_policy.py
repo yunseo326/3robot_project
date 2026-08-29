@@ -22,7 +22,7 @@ import mujoco
 import mediapy as media
 from stable_baselines3 import PPO
 
-from envs.biped_mimic_gym import BipedMimicGym
+from envs.biped_mimic_gym import ACTION_SCALE, BipedMimicGym
 
 
 def main():
@@ -33,6 +33,10 @@ def main():
     parser.add_argument("--out", required=True)
     parser.add_argument("--seconds", type=float, default=10.0)
     parser.add_argument("--fps", type=int, default=30)
+    parser.add_argument("--action-scale", type=float, default=None,
+                         help="학습 때 쓴 값과 반드시 일치시켜야 한다. 생략시 기본값(0.3rad).")
+    parser.add_argument("--arm-action-scale", type=float, default=None,
+                         help="학습 때 --arm-action-scale을 줬다면 여기도 동일하게 맞춘다.")
     parser.add_argument("--start-frame", type=int, default=5,
                          help="레퍼런스의 이 프레임에서 시작 (기본 5). frame 0은 STAGE1 "
                               "reset-noise 특유의 상태라 이 정책이 유독 못 버팀(31스텝에 낙상) "
@@ -41,8 +45,10 @@ def main():
 
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
 
+    action_scale = args.action_scale if args.action_scale is not None else ACTION_SCALE
     model = PPO.load(args.model)
-    env = BipedMimicGym(args.reference, model_path=args.xml, use_rsi=False)
+    env = BipedMimicGym(args.reference, model_path=args.xml, use_rsi=False,
+                         action_scale=action_scale, arm_action_scale=args.arm_action_scale)
 
     renderer = mujoco.Renderer(env.model, height=480, width=640)
     render_every = max(int(round((1.0 / args.fps) / env.model.opt.timestep / env.n_substeps)), 1)

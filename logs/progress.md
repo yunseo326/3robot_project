@@ -8,6 +8,77 @@
 차단 요인   : 없음
 ```
 
+**팔 모방학습 떨림 원인 진단 + 재검증 (2026-08-28, STAGE 진행상황과 무관)**: 사용자가 "이전 팔 모방학습(2026-08-28 앞 항목의 `handmove_arm_smoke`) 결과 로봇이 진동하며 제대로 못 움직였다"고 보고, 쿼터니언이 포함된 새 CSV(`npz_handmove_test_ver2_with_r.csv`, `upper_arm.*/forearm.*` 등 본마다 world quaternion 4컬럼 추가)를 제공해 3가지 확인을 요청했다.
+
+1. **팔 관절 존재 확인(PASS)**: `models/_viz_arms_temp.xml`에서 팔 hinge 관절 8개(양팔 각 shoulder_yaw/roll/pitch+elbow) 정상 확인.
+2. **중력 안정성 확인(PASS)**: stand keyframe에서 제어입력을 그 자세로 고정하고 8초 물리 롤아웃 — 위치 이탈 0.38mm, 기울어짐 0.0000°로 쓰러지거나 흔들리지 않음.
+3. **떨림 원인 규명**: 기존 `references/handmove_test.npz`(v1, `convert_handmove_to_npz.py`)의 `r_elbow` 각도를 프레임별로 분석하니 실제 값은 거의 0인데도 413스텝 중 104번 부호가 뒤집히는 미세 진동이 있었다. 원인: 이 테스트 동작은 팔꿈치를 편 채(elbow≈0) 어깨만 움직이는데, v1의 팔꿈치 굽힘축 추정이 `cross(위팔방향, 아래팔방향)`(다리의 무릎축 추정 로직을 그대로 재사용)이라 두 벡터가 거의 평행해지는 이 동작에서 축 추정이 구조적으로 불안정해진다 — 정확히는 hip_yaw와 같은 "자기축 self-twist는 방향벡터만으로 복원 불가" 문제의 팔 버전(다리 회전값 검증 실험, 위 2026-08-29 항목과 동일 계열의 근본 원인).
+
+   **해결**: `scripts/convert_handmove_to_npz_v2.py`(신규) — 쿼터니언이 있으면 외적 추정이 필요 없다. 어깨는 `R_joint(t) = R_bone_rootlocal(0)^T @ R_bone_rootlocal(t)`(rest 대비 순수 관절회전, `hip_euler_from_matrix` 재사용)로, 팔꿈치는 `rel(t)=upper_arm_quat(t)^-1 · forearm_quat(t)`를 rest로 보정한 뒤 `2·arccos(|w|)`로 직접 계산 — 축 추정 자체가 없어 팔이 펴진 구간에서도 안정적이다. `references/handmove_test_v2.npz` 생성 후 검증: round-trip 방향벡터 오차 0.027°(v1과 동급으로 정확), r_elbow max|diff|가 0.00984rad(v1, 실질적 진동) → 0.00000rad(v2, 사실상 완전히 평평)으로 개선.
+
+   **스모크 재학습(30만 스텝, PYTHONIOENCODING=utf-8 필요 — cp949 콘솔에서 `—` UnicodeEncodeError 발생)**: `handmove_arm_smoke_v2` — reward -1.75→13.3으로 정체 없이 상승(v1의 -0.9→16.1과 같은 패턴, PASS).
+
+   **남은 문제(참조 데이터 버그와 별개)**: 학습된 정책을 실제로 굴려보면(렌더링 + 액추에이터 명령 시계열 직접 비교) v1·v2 둘 다 30스텝 근처에서 낙상하고, 액추에이터 명령 자체가 여전히 들쭉날쭉하다(부호가 스텝마다 자주 뒤집힘, ctrl 범위 ±0.3 포화 빈번) — 이건 참조 데이터가 아니라 **정책이 아직 수렴 전(30만 스텝=19 PPO iteration)이라 학습 곡선의 std(≈0.8)가 아직 높은 상태**이기 때문으로 보인다(STAGE2 본학습 10M스텝에서는 이 흔들림이 실제로 해소된 전례가 있음 — 위 "본 학습(10M스텝)" 항목 참고). 즉 사용자가 본 "떨림"에는 최소 두 가지 원인이 섞여 있었다: ① 참조 데이터의 구조적 노이즈(고침) ② 스모크 수준 학습의 미수렴(스모크 테스트의 목적상 원래 기대 범위 밖 — 본학습 여부는 사용자 판단 대기).
+
+   렌더링 노트: 이 환경에서 `MUJOCO_GL=egl`이 실패해 `MUJOCO_GL=wgl`로 대체해야 했고, ffmpeg가 PATH에 없어 `envs/3robot/Library/bin`을 PATH에 추가해야 `mediapy`가 동작했다(다음에도 필요).
+
+**본학습 착수 + 완료 (2026-08-28→29, 사용자 승인)**: 스모크 통과 후 사용자가 본학습(10M스텝) 진행을 요청, 기존 20분/7분 발열 페이싱 유지 지시. 실측 fps(≈1875)로 예상 소요시간 안내(순수 연산 ~89분, 페이싱 포함 ~2시간). `handmove_arm_full` 라벨로 백그라운드 detached 실행(PID: `logs/train_handmove_full.pid`, 로그: `logs/train_handmove_full.log`) — 세션이 끝나도 프로세스는 독립적으로 계속 진행되어 실제로 10M스텝까지 정상 완주(TRAIN_STAGE2_LOCAL_OK). 청크 로그 기준(20분 작업×4회완료+7분 휴식×4회+마지막 부분청크 ~19분) 총 소요 약 2시간 — 사전 예상(~2시간)과 일치.
+
+ep_rew_mean 추이(0%→25%→50%→75%→100%): -1.75 → 56.5 → 67.9 → 71.6 → **74.0**. 정체 없이 상승은 했지만 마지막 10%(9M→10M) 구간에서 73.8→74.0으로 사실상 평평해짐 — STAGE2 통과기준("정체 없이 상승")을 엄밀하게는 못 채운 것에 가깝다. 렌더링 확인 결과 실제로 시작 프레임과 무관하게 약 65~68스텝(≈1.3~1.4초, 레퍼런스 전체 8.3초 중 16%)에서 낙상 후 종료 — STAGE2 걷기 본학습(ep_len_mean 최종 293/1000)과 비교해 훨씬 이른 실패.
+
+**원인 진단**: reward 항목별 시계열을 뜯어보니 `imitation_root_pos`(0.15 만점 근접), `imitation_root_ori`, `imitation_survival`, `limits_joint`(≈0, 위반 없음), `regularization`(≈-0.95, 매끈함)은 전부 50% 지점 이후 사실상 포화(최댓값 근접)됐는데, **`imitation_leg_pose`만 유일하게 0.48~0.55 근처에서 전혀 개선 없이 정체**돼 있다(참고로 이 항목의 스텝당 최댓값은 0.35인데 68스텝 누적합이 0.5 수준이면 스텝당 평균이 거의 0에 가깝다는 뜻 — "낮은 게 아니라 거의 완전히 실패"). `envs/biped_mimic_gym.py:247`의 `leg_pose_err = sum((qpos[7:]-target_qpos[7:])**2)`가 원인으로 보인다 — 이 코드는 `character.xml`(다리 8DOF만) 기준으로 짜여 "나머지 관절 전부"를 하나의 오차항으로 묶는데, `_viz_arms_temp.xml`(23차원 qpos, 다리8+팔8=16DOF)에 그대로 재사용되면서 **다리뿐 아니라 팔까지 이 하나의 "leg_pose" 항에 합쳐져 버린다.** 팔 어깨 yaw가 최대 ~77°(≈1.34rad)까지 크게 움직이는데, 이 항의 감쇠상수 `K_LEG_POSE=2.0`은 원래 다리(관절범위 대략 ±30°=0.52rad 수준)에 맞춰진 값이라 팔이 크게 움직이는 구간의 오차 제곱합이 순식간에 커져 `exp(-2.0×err)`가 거의 0으로 죽어버린다 — 팔을 크게 움직이라는 유효한 학습 신호가 사실상 없었던 것으로 보인다. CLAUDE.md가 STAGE3에서 "다리와 목의 가중치를 반드시 분리한다"고 못박은 것과 동일한 종류의 문제가, 팔 버전에서 미리 재현된 셈.
+
+**주의 — 이 실험은 STAGE3 확정 전 임시 검증(character.xml·STAGE 상태 불변)이라 `biped_mimic_gym.py`를 이 시점에 고치지 않았다.** 고치려면(leg_pose와 arm_pose를 별도 가중치 항으로 분리) 재학습이 필요해 사용자 판단 대기로 남겨둔다 — 상세: `logs/question.md`.
+
+렌더링/체크포인트: `logs/checkpoints/stage2_local/handmove_arm_full/final_model.zip`, `logs/result/handmove_v2/handmove_v2_full_policy_rollout.mp4`.
+
+**leg_pose/arm_pose 분리 수정 + 재학습 착수 (2026-08-29, 사용자 승인, STAGE 진행상황과 무관)**: 위에서 진단한 `imitation_leg_pose` 항목이 다리+팔 오차를 한데 섞어 죽는 문제를 수정. `envs/biped_mimic_gym.py`에 관절 이름 기반(`"shoulder"`/`"elbow"` 포함 여부) 다리/팔 DOF 인덱스 분리 로직을 `__init__`에 추가(`_leg_qpos_idx`/`_arm_qpos_idx`/`_leg_dof_idx`/`_arm_dof_idx`) — 모델에 무관하게 동작하며, `character.xml`(STAGE2 걷기, 팔 관절 없음)에서는 arm 인덱스가 항상 빈 배열이 되어 `arm_pose`/`arm_vel` 보상이 늘 0으로 꺼진다(기존 STAGE2 결과에 영향 없음, 재확인 완료). `_viz_arms_temp.xml`에서는 다리 8DOF/팔 8DOF로 정확히 분리됨(재확인 완료).
+
+`imitation_leg_pose`(다리 전용, `K_LEG_POSE=2.0` 그대로 유지)와 별도로 `imitation_arm_pose`(신규, `K_ARM_POSE=0.4` — 어깨 스윙 범위가 다리보다 훨씬 커서 감쇠상수를 다리의 1/5로 완화) + `imitation_arm_vel`(신규, `K_ARM_VEL=0.1`)을 추가, `IMITATION_WEIGHTS`에 `arm_pose=0.35`/`arm_vel=0.10`을 다리와 대칭으로 부여(CLAUDE.md STAGE3 "다리와 목의 가중치를 반드시 분리한다" 원칙을 팔에 적용). 재시작 직후 첫 로그에서 `imitation_arm_pose`가 즉시 0이 아닌 값(에피소드 누적 5.71, 스텝당 최댓값 0.35에 근접)을 내는 것 확인 — 이전엔 이 신호가 사실상 없었다.
+
+`handmove_arm_full_v2` 라벨로 10M스텝 재학습 착수(기존 20분작업/7분휴식 페이싱 유지, `fall-geom-names`에 `l_upper_arm_geom`/`r_upper_arm_geom` 추가 — 팔이 몸통에 닿아도 낙상 판정되도록). PID: `logs/train_handmove_full_v2.pid`, 로그: `logs/train_handmove_full_v2.log`.
+
+**재학습 완료 + 결과 (2026-08-29)**: `TRAIN_STAGE2_LOCAL_OK`로 10M스텝 정상 완주(청크 5회 + 마지막 부분청크, 총 소요 이전과 비슷한 약 2시간). ep_rew_mean 추이(0%→25%→50%→75%→100%): 12 → 58.6 → 125 → 347 → **331**(마지막 25%에서 347→331로 소폭 하락, PPO 탐험 노이즈 범위 — STAGE1 case1_short 때도 비슷한 흔들림이 있었고 그때도 실제 deterministic 정책은 안정적이었음). ep_len_mean: 28.6 → 46.8 → 83.9 → 217 → **206**. `imitation_leg_pose`(7.81→42.8→32.6)와 `imitation_arm_pose`(5.54→40.5→40.1)가 이제 **거의 같은 스케일로 나란히 개선** — 수정 전 arm_pose가 leg_pose에 흡수돼 죽어있던 것과 달리 둘 다 유효한 학습 신호를 받고 있음을 확인.
+
+**렌더링 검증(4개 시작 프레임)**: start-frame 0/5/50/100/200 전부 `terminated=False, truncated=True`로 **레퍼런스 끝(413~415/415프레임)까지 완주, 한 번도 낙상하지 않음** — 수정 전(시작점 무관하게 65~68/415=16%에서 낙상)과 정반대 결과. 원인 진단(leg_pose·arm_pose 보상 혼합)이 맞았음이 실측으로 확인됨. 체크포인트: `logs/checkpoints/stage2_local/handmove_arm_full_v2/final_model.zip`, 영상: `logs/result/handmove_v2/handmove_v2_full_v2_policy_rollout.mp4`.
+
+이 실험은 여전히 STAGE3 확정 전 임시 검증(character.xml·현재 STAGE 상태 불변)이다. 코드 수정(`envs/biped_mimic_gym.py`의 leg/arm 분리)은 이름 기반이라 STAGE2 걷기(`character.xml`, 팔 관절 없음)에는 영향 없음을 재확인 완료(수정 직후 arm_pose=0.0 확인).
+
+**"레퍼런스와 학습결과가 다르다" 재확인 요청 → 진짜 원인 발견: action_scale 캡 (2026-08-29, 사용자 지적)**: 사용자가 `handmove_arm_full_v2` 결과 영상이 이상하다고 재검토 요청. 재검토 과정에서 두 가지를 발견했다.
+
+1. **원래 비교 아티팩트의 카메라 문제**: 렌더 스크립트들이 STAGE1/2 걷기용으로 고정해둔 정면 카메라(`azimuth=90`)는 이 팔 동작(어깨 yaw = 수평면 회전)을 카메라 시선 방향과 거의 평행하게 만들어 스윙이 거의 안 보였다 — 레퍼런스도 정책 결과도 둘 다 "가만히 있는 것처럼" 보여서 비교 자체가 무의미했다. 측면(`azimuth=0`)으로 다시 찍으니 스윙이 뚜렷이 보였다(임시 스크립트로만 확인, `scripts/render_*.py` 원본 카메라값은 안 건드림 — STAGE1/2 걷기 레퍼런스와 카메라 규약 공유).
+2. **진짜 원인**: 측면 카메라로도 정책이 팔을 거의 안 움직이는 게 뚜렷해서 실제 관절각을 직접 뽑아봤다. `handmove_arm_full_v2` 정책의 `r_shoulder_yaw`는 스텝 5 이후 **정확히 17.19°에서 고정**된 채 에피소드 끝(413스텝)까지 전혀 안 움직였다(레퍼런스는 0°→77°). 17.19°=0.3rad — `envs/biped_mimic_gym.py`의 `ctrl = default_pose + action·ACTION_SCALE`에서 `ACTION_SCALE=0.3rad`이 **전 관절 공용**이었던 게 원인. `action∈[-1,1]`이므로 어떤 관절이든 `default_pose`(어깨 yaw 기본값 0°) 대비 최대 0.3rad=17.19°까지만 명령 가능 — 정책이 action=+1로 포화됐어도(올바르게 "최대한 움직이라"고 배웠어도) 애초에 그 이상 낼 방법이 없었다. 다리는 걷기 동작 자체가 정지자세 대비 ±20~30° 안쪽이라 0.3rad로 충분했지만, 이 팔 동작(목표 77°)은 처음부터 이 상한에 걸릴 수밖에 없었다 — `K_ARM_POSE`(보상) 문제가 전혀 아니라 **행동공간(action space) 캡** 문제였다.
+
+**수정 + 재학습 착수**: `BipedMimicGym.__init__`에 `action_scale`(스칼라, 기본값 유지)과 `arm_action_scale`(신규, 어깨/팔꿈치 관절에만 적용) 파라미터 추가 — 앞서 leg/arm 보상 분리에 쓴 관절 인덱스를 재사용해 관절별 action_scale 벡터를 구성한다. 다리는 검증된 0.3rad 그대로, 팔만 1.6rad(목표 최대 77°=1.34rad에 여유)로 분리. `character.xml`(STAGE2 걷기)은 `arm_action_scale` 미지정시 전 관절이 기존 0.3rad 그대로라 영향 없음(재확인 완료). `scripts/train_stage2_local.py`·`scripts/render_mimic_policy.py`에 `--action-scale`/`--arm-action-scale` CLI 옵션 추가(생략시 기존 동작과 동일).
+
+`handmove_arm_full_v3` 라벨로 10M스텝 재학습 착수(동일 페이싱). 비교 아티팩트(측면 카메라 영상 + 실측 관절각 그래프): 진단 결과 정리, 사용자에게 공유함.
+
+**사용자 지시로 3M스텝으로 축소 재실행 (2026-08-29)**: "10M도 필요없을 것 같다"는 사용자 판단에 따라 진행 중이던 10M(chunk1, ~220K스텝)을 정지하고 동일 설정(`arm_action_scale=1.6`)으로 3M스텝 재시작 — `TRAIN_STAGE2_LOCAL_OK` 정상 완료(~9분 청크 1회 + 이어서, 총 약 17분).
+
+**결과: action_scale 수정 자체는 확인됐지만 3M은 미수렴**. 관절각 실측: r_shoulder_yaw가 더 이상 17.19°에 갇히지 않고 스텝 0~5 사이에 이미 29°→79°까지 크게 움직인다(수정이 유효함을 증명 — 이전엔 물리적으로 불가능했던 범위). 다만 **타이밍이 전혀 안 맞는다** — 레퍼런스 목표가 아직 0°~5° 근처인 스텝 0~40 구간에서 정책이 먼저 65~80°까지 팔을 크게 휘둘러버리고, 그 반동으로 균형이 무너져 **41/415스텝(10%)에서 낙상**(`terminated=True`) — v2(얼어붙은 팔, 그래서 오히려 안 넘어짐)의 206스텝보다도 짧다. reward/ep_len_mean은 3M 끝까지 정체 없이 계속 상승 중이었다(0%→100%: reward 1.14→56, ep_len 28.2→44.7, arm_pose 1.81→11.6, leg_pose와 거의 같은 속도로 동반 상승) — 즉 **학습 자체는 올바른 방향으로 가고 있으나 3M으로는 "팔을 크게 움직이면서도 안 넘어지는" 조합까지 못 배웠다.** 체크포인트: `logs/checkpoints/stage2_local/handmove_arm_full_v3/final_model.zip`, 영상: `logs/result/handmove_v2/handmove_v3_policy_rollout.mp4`(21프레임, 41스텝에서 낙상해 조기 종료).
+
+**사용자 결정: 이어서 누적 10M까지 학습**. `scripts/train_stage2_local.py`에 `--resume-from`(체크포인트 zip을 `PPO.load(path, env=vec_env)`로 불러와 `num_timesteps` 포함 그대로 이어감) 옵션을 신규 추가 — 기존엔 매번 새 PPO를 생성해 처음부터만 돌릴 수 있었다. 3M 체크포인트를 `final_model_at_3M.zip`으로 백업(이어학습이 끝나면 `final_model.zip`이 10M 결과로 덮어써지므로) 후 동일 라벨(`handmove_arm_full_v3`)로 재개 — 로그에서 `resumed from ... at 3014664 steps` 확인, `total_timesteps=3031048`부터 재시작해 이전 3M 종료 시점 지표(ep_len_mean 44.4, ep_rew_mean 55.8)와 정확히 이어짐을 확인. `TRAIN_STAGE2_LOCAL_OK`로 10007496스텝 정상 완료.
+
+**10M 결과: 3M 대비 개선은 있으나 완만한 정체, 낙상 시점은 크게 안 늘어남**. ep_rew_mean/ep_len_mean 추이(3M/약45%/약65%/약83%/10M): reward 57.5→61.8→67.9→**71.4**(약 8.3M 지점 피크)→**68.7**(10M, 소폭 하락), ep_len 45.8→45.6→48.6→**50.1**(피크)→**47.9**(10M). 즉 8.3M 근방에서 사실상 정체(마지막 1.7M스텝은 개선이 아니라 소폭 퇴보) — 3M 때 지적된 "정체 없이 상승"이 10M 전 구간에서는 더 이상 유지되지 않는다.
+
+**관절각 실측 재확인**: 여전히 스텝 0~5 사이에 target이 0°~1°대인데 실제값이 50~67°까지 먼저 튀어오르는 "조기 오버슈트" 패턴이 그대로 남아있다 — 3M 때(41스텝 낙상)보다 아주 조금 늦게(46스텝) 낙상하는 정도만 개선. `upvector_z`가 스텝 20 이후(0.999→0.997→0.989→0.958→0.854→0.562) 서서히 무너지다 0.5 임계값 아래로 떨어져 `tipped` 판정으로 종료 — 팔을 조기에 크게 휘두른 반동이 누적되어 균형이 무너지는 패턴으로 보인다.
+
+**해석**: `action_scale` 수정(팔이 물리적으로 목표까지 갈 수 있게 함)은 여전히 유효하고 확인됐지만, 이번엔 **보상이 "이르든 늦든 목표에 가까우면 보상"만 줄 뿐 "아직 움직일 때가 아닌데 미리 움직이면 감점"은 약하다**는 두 번째 문제가 드러났다. `K_ARM_POSE=0.4`가 다리(`K_LEG_POSE=2.0`) 대비 소프트하게 설정돼 있어(원래 의도: 큰 팔 스윙 범위에서 학습 초반 그래디언트가 죽지 않게), 60° 조기 오버슈트에도 `exp(-0.4×(60°)²_rad)≈0.65`로 꽤 높은 부분점수를 주고 있다 — 팔을 "제때" 움직이도록 강제하는 압력이 부족하다. `K_ARM_POSE`를 다리 쪽에 가깝게 올리거나(타이밍 정밀도↑, 다만 학습 초반 그래디언트 소실 재발 위험), action_rate/acc 정규화를 팔에 더 강하게 주는 것(급격한 스윙 자체에 직접 페널티) 등이 다음 후보로 제시됐으나, **사용자가 여기서 임시 검증을 종료하기로 결정** — 10M 결과(`handmove_arm_full_v3`)를 이번 실험의 최종 상태로 확정한다. 체크포인트: `logs/checkpoints/stage2_local/handmove_arm_full_v3/final_model.zip`(10M, 최종), `final_model_at_3M.zip`(3M, 참고용 백업), 영상: `logs/result/handmove_v2/handmove_v3_10M_policy_rollout.mp4`(24프레임, 46스텝에서 낙상).
+
+**이 임시 검증 실험의 최종 요약**: 원래 사용자가 보고한 "떨림"에는 세 가지 서로 다른 원인이 섞여 있었던 것으로 정리된다 — ① 참조 데이터(v1 변환 스크립트)의 팔꿈치 축 추정 노이즈(해결, v2 쿼터니언 방식), ② `leg_pose`/`arm_pose` 보상이 하나로 섞여 팔 학습 신호가 죽던 문제(해결, 보상 항목 분리), ③ `ACTION_SCALE`이 전 관절 공용이라 팔이 물리적으로 목표각까지 명령될 수 없던 문제(해결, 관절별 action_scale 분리). 세 가지 모두 코드/파이프라인 차원에서는 고쳤고 재사용 가능한 형태(`arm_action_scale`, leg/arm 보상 분리, `--resume-from`)로 남겼다. 다만 K_ARM_POSE의 타이밍 민감도 부족이라는 네 번째 이슈는 발견만 하고 손대지 않은 채 남겨뒀다 — STAGE3에서 목 관절 도입 시 유사한 보상 튜닝이 어차피 필요하므로 그때 함께 다룰 수 있다. STAGE 진행상황(현재 STAGE 2)은 이 실험으로 변경되지 않는다.
+
+**Blender 회전값 검증 + quaternion export 도입 (2026-08-29, STAGE 진행상황과 무관)**: `rotation_value_test.csv`(head/tail만)로 다리·팔 각도추출을 검증 — round-trip 오차는 0.0000°로 코드는 정확했지만, 결과값 자체가 두 가지 구조적 한계를 드러냈다: ① 몸통(spine) 자기축 트위스트(+13.311°, 양쪽 어깨가 정확히 동일 각도로 원운동)가 head/tail엔 전혀 안 남고 통째로 어깨 yaw에 흡수됨(자기축 회전은 위치 데이터로 원리적 복원 불가). ② 다리 무릎 굽힘이 로봇의 실제 무릎축(Y)이 아닌 X축 방향이라 hip_yaw가 150°~180°/−84°까지 튐(character.xml 한계 ±30° 대폭 초과) — 코드 버그 아니라 그 동작 자체가 지금 로봇 골격으로 불가능한 자세.
+
+`blender/export_bones_with_rotation.py`(신규)로 본마다 world-space rotation quaternion 4컬럼을 추가 export하도록 변경, `rotation_value_test_ver2.csv`로 재검증 — 위 두 finding 모두 quaternion ground truth로 **정확히(13.311° 소수점까지) 확인됨**. 무릎축 불일치의 실제 의도(진짜 hip_roll 테스트인지, sagittal 무릎을 의도했는데 축이 잘못 잡힌 건지)는 아직 사용자 확인 대기. 상세: 메모리 `project-blender-npz-pipeline`.
+
+**팔 모방학습 파이프라인 검증 실험 (2026-08-28, STAGE 진행상황과 무관)**: 사용자가 `t-pose.csv`/`npz_handmove_test.csv`(head=1단위 rig, 실척 배율 k=0.258065 — 다리용 `npz_test.csv`와는 스케일 관례가 다른 별도 rig)를 제공, 3단계로 검증 요청.
+
+1. **CSV pos ↔ XML pos 일치 검증(PASS)**: `t-pose.csv`(250프레임 전부 static 확인) 기반으로 `models/_viz_arms_temp.xml`의 어깨 위치·팔 길이가 정확히 역산됐는지 재계산 대조 — 오차 1e-6 이하로 전부 일치.
+2. **이론적 관절각 계산 ↔ MuJoCo 측정값 round-trip 검증**: `scripts/convert_csv_to_npz.py`의 다리 각도추출 로직을 팔(어깨3축+팔꿈치)로 확장하는 과정에서 버그 발견 — `r_upper_arm_geom`/`r_forearm_geom`이 로컬 -Y(왼팔은 +Y, 거울대칭)인데 다리 코드를 그대로 베껴 양팔 다 +Y로 가정했었다. `side_sign`으로 수정 후 재검증하니 250프레임 전체에서 방향벡터 오차 0.0000°(완전 일치)로 PASS(`scripts/convert_handmove_to_npz.py`에 반영).
+3. **모방학습 파이프라인 검증(PASS)**: `_viz_arms_temp.xml`(시각화 전용 임시 모델, character.xml과 무관)에 팔 액추에이터 8개 + stand keyframe을 추가하고, `envs/biped_mimic_gym.py`에 `fall_geom_names` 파라미터를 추가(기본값 유지, 하위호환)해 다른 모델도 재사용 가능하게 했다. `references/handmove_test.npz`(오른팔 어깨 yaw 스윙)로 `train_stage2_local.py`를 그대로 재사용해 30만 스텝 스모크 학습 — reward가 -0.9→16.1로 정체 없이 상승(STAGE2와 동일한 통과 기준 충족). 체크포인트: `logs/checkpoints/stage2_local/handmove_arm_smoke/`.
+
+**주의**: 이 실험은 사용자가 명시적으로 "임시 검증용, character.xml·STAGE 상태 불변"으로 범위를 한정해 진행했다 — CLAUDE.md의 "팔·LCD를 RL 정책에 넣지 않는다(STAGE3 기준)" 규칙과 겹칠 수 있어 먼저 확인받았다. STAGE 진행상황(현재 STAGE 2)은 이 실험으로 변경되지 않는다.
+
 **STAGE 1 확정 (2026-08-23, 사용자 판단)**: case1_short를 주력으로 채택, `models/character.xml`로 확정(내용은 `models/smoke_case1.xml`과 동일 — 다리폭0.175, hip_y 돌출캡0.01, 발목없음). case2_long은 폐기하지 않고 `models/smoke_case2.xml` + 체크포인트를 그대로 보류(나중에 재검토 가능).
 
 **주의 — CLAUDE.md 엄격 기준 미달 상태에서 확정**: STAGE1 통과 기준("에피소드 길이가 최대치에 도달해 유지된다")은 학습 곡선(stochastic rollout) 기준으로는 충족되지 않았다 — case1_short 최종 episode_length는 약 222~296/1000. 사용자가 이 표본실험 수준에서 STAGE1을 마무리하고 STAGE2로 넘어가기로 명시적으로 결정했다. **후속 확인(아래 레퍼런스 녹화 항목)**: 다행히 deterministic(탐험 노이즈 없이) 정책은 실제로 20/20 시드 전부 최대 길이(1001스텝)까지 안 넘어지고 완주했다 — 학습곡선의 낮은 episode_length는 PPO 탐험 노이즈 때문이었고, 정책 자체는 이미 충분히 안정적이었다. STAGE1 엄격 기준 미달 우려는 기우였던 것으로 보인다.

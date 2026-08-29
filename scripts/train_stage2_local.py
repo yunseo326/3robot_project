@@ -24,7 +24,7 @@ from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import VecMonitor
 
-from envs.biped_mimic_gym import make_biped_mimic_env
+from envs.biped_mimic_gym import ACTION_SCALE, make_biped_mimic_env
 
 SAVE_FREQ_STEPS = 200_000
 
@@ -71,8 +71,24 @@ def main():
     parser.add_argument("--n-envs", type=int, default=8)
     parser.add_argument("--min-episode-len", type=int, default=30)
     parser.add_argument("--no-rsi", action="store_true", help="RSI를 끄고 항상 frame 0에서 시작")
+    parser.add_argument("--fall-geom-names", default=None,
+                         help="쉼표로 구분한 낙상판정 geom 이름 목록. 생략시 character.xml 기본값 사용"
+                              "(다른 모델 XML을 쓸 때 필요, 예: _viz_arms_temp.xml)")
+    parser.add_argument("--action-scale", type=float, default=None,
+                         help="ctrl = default_pose + action*action_scale의 스케일(rad). "
+                              "생략시 envs/biped_mimic_gym.ACTION_SCALE(0.3rad) 사용. "
+                              "레퍼런스 관절각이 default_pose 대비 이 값보다 크게 벗어나면 "
+                              "action=±1이어도 물리적으로 못 따라간다(예: 팔 어깨 스윙).")
+    parser.add_argument("--arm-action-scale", type=float, default=None,
+                         help="어깨/팔꿈치 관절에만 별도로 줄 action_scale(rad). 생략시 "
+                              "--action-scale과 동일(다리와 같은 스케일).")
     parser.add_argument("--chunk-minutes", type=float, default=20.0)
     parser.add_argument("--rest-minutes", type=float, default=7.0)
+    parser.add_argument("--resume-from", default=None,
+                         help="이 체크포인트(.zip)를 불러와 이어서 학습한다(num_timesteps 포함 "
+                              "그대로 복원). --timesteps는 '이어받은 이후'가 아니라 '누적 총합' "
+                              "기준이다 — 예: 3M에서 --resume-from + --timesteps 10000000이면 "
+                              "7M을 더 돈다.")
     args = parser.parse_args()
 
     root = os.path.join(os.path.dirname(__file__), "..")
@@ -83,31 +99,41 @@ def main():
     os.makedirs(save_dir, exist_ok=True)
     os.makedirs(tb_dir, exist_ok=True)
 
+    fall_geom_names = args.fall_geom_names.split(",") if args.fall_geom_names else None
+    action_scale = args.action_scale if args.action_scale is not None else ACTION_SCALE
     env_factory = make_biped_mimic_env(
         reference_path=reference_path,
         model_path=model_path,
         min_episode_len=args.min_episode_len,
         use_rsi=not args.no_rsi,
+        fall_geom_names=fall_geom_names,
+        action_scale=action_scale,
+        arm_action_scale=args.arm_action_scale,
     )
     vec_env = make_vec_env(env_factory, n_envs=args.n_envs)
     vec_env = VecMonitor(vec_env)
 
-    # STAGE1(train_stage1_local.py)과 동일한 하이퍼파라미터 — 동일 조건 원칙.
-    model = PPO(
-        "MlpPolicy",
-        vec_env,
-        learning_rate=3e-4,
-        gamma=0.97,
-        gae_lambda=0.95,
-        ent_coef=0.01,
-        clip_range=0.3,
-        n_epochs=4,
-        batch_size=256,
-        n_steps=2048,
-        verbose=1,
-        tensorboard_log=tb_dir,
-        seed=1,
-    )
+    if args.resume_from:
+        resume_path = os.path.abspath(os.path.join(root, args.resume_from))
+        model = PPO.load(resume_path, env=vec_env, tensorboard_log=tb_dir)
+        print(f"resumed from {resume_path} at {model.num_timesteps} steps", flush=True)
+    else:
+        # STAGE1(train_stage1_local.py)과 동일한 하이퍼파라미터 — 동일 조건 원칙.
+        model = PPO(
+            "MlpPolicy",
+            vec_env,
+            learning_rate=3e-4,
+            gamma=0.97,
+            gae_lambda=0.95,
+            ent_coef=0.01,
+            clip_range=0.3,
+            n_epochs=4,
+            batch_size=256,
+            n_steps=2048,
+            verbose=1,
+            tensorboard_log=tb_dir,
+            seed=1,
+        )
 
     checkpoint_callback = CheckpointCallback(
         save_freq=max(SAVE_FREQ_STEPS // args.n_envs, 1),
@@ -117,8 +143,9 @@ def main():
     component_callback = ComponentLoggingCallback()
 
     print(f"=== STAGE 2 (local) — {args.label} ({model_path}, ref={reference_path}) ===", flush=True)
-    print(f"RSI={not args.no_rsi}, pacing: {args.chunk_minutes}min work / {args.rest_minutes}min rest",
-          flush=True)
+    print(f"RSI={not args.no_rsi}, action_scale={action_scale}, "
+          f"arm_action_scale={args.arm_action_scale}, "
+          f"pacing: {args.chunk_minutes}min work / {args.rest_minutes}min rest", flush=True)
 
     chunk_seconds = args.chunk_minutes * 60
     rest_seconds = args.rest_minutes * 60

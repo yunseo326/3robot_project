@@ -2,6 +2,13 @@
 logs/checkpoints/
 logs/tb/
 
+# 백그라운드 학습 실행 로그/pid (재생성 가능, 세션마다 새로 생김)
+logs/*.log
+logs/*.pid
+
+# 영상 프레임 추출 스크래치 (mp4에서 언제든 재추출 가능)
+logs/result/**/frames*/
+
 # Python
 __pycache__/
 *.pyc
