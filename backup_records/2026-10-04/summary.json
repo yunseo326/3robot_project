@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-04",
+  "timezone": "Asia/Seoul",
+  "repository": "yunseo326/3robot_project",
+  "branch": "backup/2026-10-04",
+  "parent_commit": "d0cf33a1c6b929af17a0db83862dac5be2f29205",
+  "original_remote_main": "d0cf33a1c6b929af17a0db83862dac5be2f29205",
+  "selected_file_count": 75,
+  "selected_bytes": 3038793,
+  "new_or_changed_files": 51,
+  "source_projects": [
+    "3robot_project"
+  ],
+  "sanitized_files": [],
+  "excluded_reason_counts": {
+    "runtime_or_link": 3,
+    "git_metadata": 1,
+    "large_training_or_media_output": 34,
+    "training_output": 16,
+    "large_training_output": 316
+  },
+  "restore_notes": "MuJoCo biped simulation. STAGE 2 is recorded as passed; STAGE 3 awaits user decision. Read logs/progress.md and docs/robot_spec.md. Restore dependencies from environment.yml. Models/envs/scripts/reference motions and progress are preserved; local training checkpoints, new videos, tensorboard data, frame dumps and Blender binary sessions are not newly uploaded. Existing remote media are inherited. Re-training is needed for excluded policies; full trained-state recovery is not claimed.",
+  "security_scan": {
+    "repo": "3robot_project",
+    "text_files": 65,
+    "bytes_scanned": 1989109,
+    "binary_not_secret_text_scanned": [
+      "docs/assets/legacy/dashboard_img_0.png",
+      "docs/assets/legacy/dashboard_img_1.png",
+      "docs/reference/74fb1b590426b3dc435a38aad0909de2.jpg",
+      "docs/reference/776d6c1d50776ce969833596bf846a04.jpg",
+      "docs/reference/d52adc5e810fa366ca83143cd27167ce.jpg",
+      "references/handmove_test.npz",
+      "references/handmove_test_v2.npz",
+      "references/npz_test.npz",
+      "references/npz_test_with_arms_viz.npz",
+      "references/stage1_walk.npz"
+    ],
+    "finding_count": 0
+  },
+  "reviewed_noncredential_hash_findings": [],
+  "unresolved_findings": [],
+  "source_programs_executed": false,
+  "local_unpushed_history_uploaded": false,
+  "python_parse_errors": [],
+  "new_metadata_files": 4,
+  "deleted_from_backup_tree_only": []
+}

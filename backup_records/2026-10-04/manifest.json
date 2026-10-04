@@ -1,0 +1,752 @@
+[
+  {
+    "project": "3robot_project",
+    "path": ".gitattributes",
+    "remote_path": ".gitattributes",
+    "source_sha256": "1d5d71dcc6ccd28ab46a335349ecc74742ca4b81f4fcad212f8d134f70f1f13e",
+    "sha256": "1d5d71dcc6ccd28ab46a335349ecc74742ca4b81f4fcad212f8d134f70f1f13e",
+    "git_blob": "dfdb8b771ce07609491fa2e83698969fd917a135",
+    "upload_size": 17,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": ".gitignore",
+    "remote_path": ".gitignore",
+    "source_sha256": "e56175d76a068bc8270fc4f6d4a5dd877155f1cf6bf6c9a77bb3a3d3211d05dc",
+    "sha256": "e56175d76a068bc8270fc4f6d4a5dd877155f1cf6bf6c9a77bb3a3d3211d05dc",
+    "git_blob": "402b6f994ecdee5e8073da75415ba2a537e44836",
+    "upload_size": 372,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "AGENTS.md",
+    "remote_path": "AGENTS.md",
+    "source_sha256": "58c53b7aa6322e11ce918cf34da756149829a67451441345c972dea9816fea5f",
+    "sha256": "58c53b7aa6322e11ce918cf34da756149829a67451441345c972dea9816fea5f",
+    "git_blob": "5198a3f1623cc2cbb6f154eacc36eba879e19597",
+    "upload_size": 21442,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "CLAUDE.md",
+    "remote_path": "CLAUDE.md",
+    "source_sha256": "d209a54faa354bab1981ad4f86168d105bc3d8f6f5ace82cf49462708085089c",
+    "sha256": "d209a54faa354bab1981ad4f86168d105bc3d8f6f5ace82cf49462708085089c",
+    "git_blob": "f4392256d112fa17ca4beec910f553ff3d79085c",
+    "upload_size": 21448,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "README.md",
+    "remote_path": "README.md",
+    "source_sha256": "8493c3692e20223a756962b6245e8a90c6c72c02397e9c65f0d99d14a1ef6946",
+    "sha256": "8493c3692e20223a756962b6245e8a90c6c72c02397e9c65f0d99d14a1ef6946",
+    "git_blob": "8a563cc13d758848920eaba09b4bc32503f624ca",
+    "upload_size": 2263,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "environment.yml",
+    "remote_path": "environment.yml",
+    "source_sha256": "c2d4a56db8471aa8a3aca2d76bcb954c47821f1f3916848302609de3dc23f585",
+    "sha256": "c2d4a56db8471aa8a3aca2d76bcb954c47821f1f3916848302609de3dc23f585",
+    "git_blob": "8264015c4f0caf0e1b8642bf5628fb8f6ae4105e",
+    "upload_size": 3404,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "export_raw_ver6.csv",
+    "remote_path": "export_raw_ver6.csv",
+    "source_sha256": "d083e3ca62bbf102229cca90e2c1283cf67de063f0113a28d8665b06b8d3752d",
+    "sha256": "d083e3ca62bbf102229cca90e2c1283cf67de063f0113a28d8665b06b8d3752d",
+    "git_blob": "bf7621fbc31cc2c447aa859ab6847cad6084402d",
+    "upload_size": 315525,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "npz_handmove_test.csv",
+    "remote_path": "npz_handmove_test.csv",
+    "source_sha256": "6f4ae477dca5819968d66da62e1199ea68c1abc6a8fb6de77cd2ffca204637d2",
+    "sha256": "6f4ae477dca5819968d66da62e1199ea68c1abc6a8fb6de77cd2ffca204637d2",
+    "git_blob": "8ad44975111955c3b7057ad2521201010f28ed7e",
+    "upload_size": 225350,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "npz_handmove_test_ver2_with_r.csv",
+    "remote_path": "npz_handmove_test_ver2_with_r.csv",
+    "source_sha256": "5ef19359e64e9121632253495455707a01b1e915af4f942d5ec075e7ceb03b52",
+    "sha256": "5ef19359e64e9121632253495455707a01b1e915af4f942d5ec075e7ceb03b52",
+    "git_blob": "7aea0176211a8456ddd6fdc91ade23a07fcbecc5",
+    "upload_size": 393113,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "npz_test.csv",
+    "remote_path": "npz_test.csv",
+    "source_sha256": "a2de4d6b56cdba5826dddadbd99b735ab600fe9abbb6626ff412c03810227be0",
+    "sha256": "a2de4d6b56cdba5826dddadbd99b735ab600fe9abbb6626ff412c03810227be0",
+    "git_blob": "ff39d535f2363abb4daf2b918706878143efc28b",
+    "upload_size": 282907,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "t-pose.csv",
+    "remote_path": "t-pose.csv",
+    "source_sha256": "71266275bf4df9736907b6072a9b3302369a7c9caadc935ea4a9d01cea9a4ff4",
+    "sha256": "71266275bf4df9736907b6072a9b3302369a7c9caadc935ea4a9d01cea9a4ff4",
+    "git_blob": "056e6a7e12ce99a4fa650024c5a55a3e1e705cfc",
+    "upload_size": 226085,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "blender/export_bones_with_rotation.py",
+    "remote_path": "blender/export_bones_with_rotation.py",
+    "source_sha256": "05434d50ab7f9ffc4ff3e7bfe113ec44964725142878bb44b22ebeab2a60fc42",
+    "sha256": "05434d50ab7f9ffc4ff3e7bfe113ec44964725142878bb44b22ebeab2a60fc42",
+    "git_blob": "a67f59b7bd6a322bc83bb8275b33459c0a8f3512",
+    "upload_size": 4655,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "docs/assumptions.md",
+    "remote_path": "docs/assumptions.md",
+    "source_sha256": "5bcd1896891d036486059641214b0c1e7d36b995e99cc84c0e41836709155c7c",
+    "sha256": "5bcd1896891d036486059641214b0c1e7d36b995e99cc84c0e41836709155c7c",
+    "git_blob": "6e307283b20ce6ba9b1f37c0b36f455c9d5e02d7",
+    "upload_size": 32440,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "docs/index.html",
+    "remote_path": "docs/index.html",
+    "source_sha256": "12bfac84506fcfa3199fb24eb33a09ba71ff3f080bcb880d8c4211f9a048f1c6",
+    "sha256": "12bfac84506fcfa3199fb24eb33a09ba71ff3f080bcb880d8c4211f9a048f1c6",
+    "git_blob": "691111cb60fcd1cf90822c6fd1cf8e89c9423b50",
+    "upload_size": 4286,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "docs/resources.md",
+    "remote_path": "docs/resources.md",
+    "source_sha256": "ea288cfa4eba5b2c4379718aa473e00ee721a0496b03ef19177dadbb52f5f1fa",
+    "sha256": "ea288cfa4eba5b2c4379718aa473e00ee721a0496b03ef19177dadbb52f5f1fa",
+    "git_blob": "2f6fb84f357e48651a88b461c41d9a94f8572f90",
+    "upload_size": 10521,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "docs/robot_spec.md",
+    "remote_path": "docs/robot_spec.md",
+    "source_sha256": "b7fba76c0da83abe35869caf42188d78b5eee9d33e4e0f423a75bff4c020ad51",
+    "sha256": "b7fba76c0da83abe35869caf42188d78b5eee9d33e4e0f423a75bff4c020ad51",
+    "git_blob": "4f6f97cb9e72df0215fb73d4274aac781d1fbf71",
+    "upload_size": 1674,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "docs/stage0-stage1-dashboard.html",
+    "remote_path": "docs/stage0-stage1-dashboard.html",
+    "source_sha256": "d5907cf4bc795da9c537d3c003073438e33b35c102c7eeae0c63abf1de584db1",
+    "sha256": "d5907cf4bc795da9c537d3c003073438e33b35c102c7eeae0c63abf1de584db1",
+    "git_blob": "4ff1ab82ae50d75d26f4984d2d6afc0496cd5409",
+    "upload_size": 25865,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "docs/stage1-shortlong.html",
+    "remote_path": "docs/stage1-shortlong.html",
+    "source_sha256": "5e56c05942cc797048440aa4b47f49e5eea46b595d49eb7c274d4226351b97d2",
+    "sha256": "5e56c05942cc797048440aa4b47f49e5eea46b595d49eb7c274d4226351b97d2",
+    "git_blob": "4a9cba13dcc5ad7545a082e98474e2945ab48f7c",
+    "upload_size": 40015,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "docs/stage2-blender-pipeline.html",
+    "remote_path": "docs/stage2-blender-pipeline.html",
+    "source_sha256": "24f7f46a0db193cd6f13dd54be5be155445fe470c8c79d97590283a65963a39e",
+    "sha256": "24f7f46a0db193cd6f13dd54be5be155445fe470c8c79d97590283a65963a39e",
+    "git_blob": "388f291265fe5619357a6c2acb5e1320c0558d63",
+    "upload_size": 16984,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "docs/stage2-handmove-arm.html",
+    "remote_path": "docs/stage2-handmove-arm.html",
+    "source_sha256": "4f0c8c675126c5e23eaa55d9e0e6d20874149f668c2f28567b46eefa818aad7b",
+    "sha256": "4f0c8c675126c5e23eaa55d9e0e6d20874149f668c2f28567b46eefa818aad7b",
+    "git_blob": "fea08b406c4d0e47b5358ed5106750a75d394cf9",
+    "upload_size": 15754,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "docs/assets/legacy/dashboard_img_0.png",
+    "remote_path": "docs/assets/legacy/dashboard_img_0.png",
+    "source_sha256": "260ce5848e423d77890f73fa7de582b9c8982ab4cffc05377eabbafbdb3d5067",
+    "sha256": "260ce5848e423d77890f73fa7de582b9c8982ab4cffc05377eabbafbdb3d5067",
+    "git_blob": "c3525667d19982c60cee15338a61b319a140c97e",
+    "upload_size": 97076,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "docs/assets/legacy/dashboard_img_1.png",
+    "remote_path": "docs/assets/legacy/dashboard_img_1.png",
+    "source_sha256": "015f4c492b546242f1286445da26c5ea24484ce2090ae386c1ae3cc242a211d4",
+    "sha256": "015f4c492b546242f1286445da26c5ea24484ce2090ae386c1ae3cc242a211d4",
+    "git_blob": "1d8daf749dc7eb333b2fcb95e8598463bf11f040",
+    "upload_size": 93089,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "docs/reference/74fb1b590426b3dc435a38aad0909de2.jpg",
+    "remote_path": "docs/reference/74fb1b590426b3dc435a38aad0909de2.jpg",
+    "source_sha256": "0d4f7a319031b285382ffd442477d6ba5993320c3a40608872473d9caf477e86",
+    "sha256": "0d4f7a319031b285382ffd442477d6ba5993320c3a40608872473d9caf477e86",
+    "git_blob": "3771b0939b35056b6cec0aae4b7742b42392833f",
+    "upload_size": 16007,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "docs/reference/776d6c1d50776ce969833596bf846a04.jpg",
+    "remote_path": "docs/reference/776d6c1d50776ce969833596bf846a04.jpg",
+    "source_sha256": "b7bf8e60aefd5999442b4f594aa44ce7f435915c84853c42311cdef63eeb6598",
+    "sha256": "b7bf8e60aefd5999442b4f594aa44ce7f435915c84853c42311cdef63eeb6598",
+    "git_blob": "b8f1b94a1f88bbe81532ac3a19cc6e228359225b",
+    "upload_size": 49606,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "docs/reference/d52adc5e810fa366ca83143cd27167ce.jpg",
+    "remote_path": "docs/reference/d52adc5e810fa366ca83143cd27167ce.jpg",
+    "source_sha256": "0b77a55571a985ae14a7e542a2bc15c7ca8f71b1523ba0e957a8472ec742a0c9",
+    "sha256": "0b77a55571a985ae14a7e542a2bc15c7ca8f71b1523ba0e957a8472ec742a0c9",
+    "git_blob": "8db002bfe4d102e284c7078f9b110496952f89d3",
+    "upload_size": 82513,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "envs/biped_mimic_gym.py",
+    "remote_path": "envs/biped_mimic_gym.py",
+    "source_sha256": "beed8fe61f03a3daf4657a6a0410006dbc761e8e20c0a77340cceb155fca48f7",
+    "sha256": "beed8fe61f03a3daf4657a6a0410006dbc761e8e20c0a77340cceb155fca48f7",
+    "git_blob": "999bd39d9dcf2fe3d3547cf453f322d1b8672a91",
+    "upload_size": 20974,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "envs/biped_rl.py",
+    "remote_path": "envs/biped_rl.py",
+    "source_sha256": "f505ce4af0614df45f4e66fe5230ed3206b195409ae24908541bcf3b77ef8a5f",
+    "sha256": "f505ce4af0614df45f4e66fe5230ed3206b195409ae24908541bcf3b77ef8a5f",
+    "git_blob": "f243a057edfbe3f00049e18083cca57e8c2a5704",
+    "upload_size": 13494,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "envs/biped_rl_gym.py",
+    "remote_path": "envs/biped_rl_gym.py",
+    "source_sha256": "93835d11dbb1fc7f4d9161be77c0361f49014fa7ed84560e3d5ad58455d142e9",
+    "sha256": "93835d11dbb1fc7f4d9161be77c0361f49014fa7ed84560e3d5ad58455d142e9",
+    "git_blob": "12dedfe95ecd7dfeff586270189722ee9a804018",
+    "upload_size": 9072,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "logs/colab_session_log.md",
+    "remote_path": "logs/colab_session_log.md",
+    "source_sha256": "4c8eed7f3eeb27b936206e6c4ba4cb4a23334800a60f9c0753eb91c605375328",
+    "sha256": "4c8eed7f3eeb27b936206e6c4ba4cb4a23334800a60f9c0753eb91c605375328",
+    "git_blob": "160f606d672d062830f8167319f35dd04db15f78",
+    "upload_size": 4908,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "logs/history_question.md",
+    "remote_path": "logs/history_question.md",
+    "source_sha256": "1e8062b649ad78a036bf4bb072fb0b035caab03b4f59702622630aefcf4403d0",
+    "sha256": "1e8062b649ad78a036bf4bb072fb0b035caab03b4f59702622630aefcf4403d0",
+    "git_blob": "308c0b39dfe4f186e46c4f0ba95bececce40a416",
+    "upload_size": 3832,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "logs/progress.md",
+    "remote_path": "logs/progress.md",
+    "source_sha256": "d1d8df2ea8ca08fc836e77e4b7e6a1b89b44656f7f280d594a05a5a6fed48416",
+    "sha256": "d1d8df2ea8ca08fc836e77e4b7e6a1b89b44656f7f280d594a05a5a6fed48416",
+    "git_blob": "36ff5c6a32b5a1350984ba4be62fee9f37e5d63c",
+    "upload_size": 46057,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "logs/question.md",
+    "remote_path": "logs/question.md",
+    "source_sha256": "7752dc9015f03cc5846d2cb369a39105e13b00f8b6ffe82c5c37decb7f06f6b4",
+    "sha256": "7752dc9015f03cc5846d2cb369a39105e13b00f8b6ffe82c5c37decb7f06f6b4",
+    "git_blob": "8b6f42897477515e67e31594d8633408e428fc67",
+    "upload_size": 2209,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/_viz_arms_temp.xml",
+    "remote_path": "models/_viz_arms_temp.xml",
+    "source_sha256": "f8f46ed1ad2044c938f31200d19cb7f33750d1510c4e21164be82e60b970e109",
+    "sha256": "f8f46ed1ad2044c938f31200d19cb7f33750d1510c4e21164be82e60b970e109",
+    "git_blob": "ec274f26643baa441ea30675566f602f3e3eab8e",
+    "upload_size": 10035,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/candidate_A.xml",
+    "remote_path": "models/candidate_A.xml",
+    "source_sha256": "9687d1a83a64ee34ccda42be04f7f91c1c9e7b9d76ff983ab926932fcd1a42d0",
+    "sha256": "9687d1a83a64ee34ccda42be04f7f91c1c9e7b9d76ff983ab926932fcd1a42d0",
+    "git_blob": "5a59e7f0dc959715eb39571758d8a5dbbda7d759",
+    "upload_size": 7047,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/candidate_B.xml",
+    "remote_path": "models/candidate_B.xml",
+    "source_sha256": "84eae726bd785261a7dff11627057db5b62fd2d969e44b2ed859301693b81412",
+    "sha256": "84eae726bd785261a7dff11627057db5b62fd2d969e44b2ed859301693b81412",
+    "git_blob": "7c25537460cf5116d2e4b234289f10af354e80ac",
+    "upload_size": 6541,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/character.xml",
+    "remote_path": "models/character.xml",
+    "source_sha256": "923693f0b0cc5e33bb609e9eb41f7ca57a081c793d64afc110cecead25cefd47",
+    "sha256": "923693f0b0cc5e33bb609e9eb41f7ca57a081c793d64afc110cecead25cefd47",
+    "git_blob": "e38a4b65e3e71dbbdbc0d7c8683d628017fab276",
+    "upload_size": 6247,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/smoke_case1.xml",
+    "remote_path": "models/smoke_case1.xml",
+    "source_sha256": "d9032c762de5b394ab351de7d88ff6ec9d58a53af9ff47ff9b209cbd91c222aa",
+    "sha256": "d9032c762de5b394ab351de7d88ff6ec9d58a53af9ff47ff9b209cbd91c222aa",
+    "git_blob": "55f87512866d060776fbdfc6f471937df3ac280f",
+    "upload_size": 5965,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/smoke_case2.xml",
+    "remote_path": "models/smoke_case2.xml",
+    "source_sha256": "40fa95de7c40ca31899ef6263f40633b73f35ccae643ccc3f3c193426852dc77",
+    "sha256": "40fa95de7c40ca31899ef6263f40633b73f35ccae643ccc3f3c193426852dc77",
+    "git_blob": "c63d0636172d8aa1a6391a6427c0367179be7d8f",
+    "upload_size": 5962,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/sweep_4b/footarea20_A.xml",
+    "remote_path": "models/sweep_4b/footarea20_A.xml",
+    "source_sha256": "eefaf067107af885ec01612ad72026b6eb261fb60a2dfdb176730e5298f840f4",
+    "sha256": "eefaf067107af885ec01612ad72026b6eb261fb60a2dfdb176730e5298f840f4",
+    "git_blob": "d58228b8e1f06e6d4ad61ad230c246ec7faf9aac",
+    "upload_size": 5919,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/sweep_4b/footarea30_A.xml",
+    "remote_path": "models/sweep_4b/footarea30_A.xml",
+    "source_sha256": "f8e0a7515faad4bc11ac18dc5ec9e0e8dcfee139fb63d4e05823d7b42dee53ef",
+    "sha256": "f8e0a7515faad4bc11ac18dc5ec9e0e8dcfee139fb63d4e05823d7b42dee53ef",
+    "git_blob": "d7bc925acade774afc6435f20c0d6caa7f9a8ffe",
+    "upload_size": 5915,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/sweep_4b/footarea40_A.xml",
+    "remote_path": "models/sweep_4b/footarea40_A.xml",
+    "source_sha256": "c280e194d6487ef1041e68d0c1317f88d3eafaef426ffa9299ccbd6da8e9dcee",
+    "sha256": "c280e194d6487ef1041e68d0c1317f88d3eafaef426ffa9299ccbd6da8e9dcee",
+    "git_blob": "32a603fc6936b3104f8d34bc703c91da1f2fd51e",
+    "upload_size": 5915,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/sweep_4b/footarea50_A.xml",
+    "remote_path": "models/sweep_4b/footarea50_A.xml",
+    "source_sha256": "f70ca3729c0e12ddec42fe759d1cec06327954052646552574bd5591afcf9a71",
+    "sha256": "f70ca3729c0e12ddec42fe759d1cec06327954052646552574bd5591afcf9a71",
+    "git_blob": "c9dec445cb9619e3498c5425e021938e3643c397",
+    "upload_size": 5915,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/sweep_4b/head30_A.xml",
+    "remote_path": "models/sweep_4b/head30_A.xml",
+    "source_sha256": "f612dbfb8ef11b383be3cb514035c007c806b4c77c79161a7cfa9b51524f386c",
+    "sha256": "f612dbfb8ef11b383be3cb514035c007c806b4c77c79161a7cfa9b51524f386c",
+    "git_blob": "cf41c0b6edba7d482056246f39da811624d20fd9",
+    "upload_size": 5916,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/sweep_4b/head30_B.xml",
+    "remote_path": "models/sweep_4b/head30_B.xml",
+    "source_sha256": "724dfd0a372c5bc11b9209a1f4a4e23f9aae1319e23ccfa7506e9e554fcc0179",
+    "sha256": "724dfd0a372c5bc11b9209a1f4a4e23f9aae1319e23ccfa7506e9e554fcc0179",
+    "git_blob": "99605381397b7edb6ac7f0dd5105fbd169d95ba7",
+    "upload_size": 6191,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/sweep_4b/head35_A.xml",
+    "remote_path": "models/sweep_4b/head35_A.xml",
+    "source_sha256": "4e3c3b380ef3a99e997441d0e08267ede4a29cb62ebdb69692aba5f169e707f9",
+    "sha256": "4e3c3b380ef3a99e997441d0e08267ede4a29cb62ebdb69692aba5f169e707f9",
+    "git_blob": "62bcb3616a466be3127e8b6481a1f95ba912514d",
+    "upload_size": 5919,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/sweep_4b/head40_A.xml",
+    "remote_path": "models/sweep_4b/head40_A.xml",
+    "source_sha256": "b9592c834122b5396ba2fe104132671322a0cdafd26aac2fab5d4d1e9caa82f8",
+    "sha256": "b9592c834122b5396ba2fe104132671322a0cdafd26aac2fab5d4d1e9caa82f8",
+    "git_blob": "b0d2f07128756fcb016981acaf0e16c698e79b57",
+    "upload_size": 5914,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/sweep_4b/head40_B.xml",
+    "remote_path": "models/sweep_4b/head40_B.xml",
+    "source_sha256": "22e88f6a71291f748fe2936fc121f77f274e4c7affbfd239cf6266fd93f5d7f5",
+    "sha256": "22e88f6a71291f748fe2936fc121f77f274e4c7affbfd239cf6266fd93f5d7f5",
+    "git_blob": "b423c631b66a70fd51627c6baf59ce211acb958f",
+    "upload_size": 6189,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/sweep_4b/head45_A.xml",
+    "remote_path": "models/sweep_4b/head45_A.xml",
+    "source_sha256": "c2bed5ab8c1709e1ffa18ac62b6bdb2e1fb7240da46ba7fc250d3f207f6fc4e8",
+    "sha256": "c2bed5ab8c1709e1ffa18ac62b6bdb2e1fb7240da46ba7fc250d3f207f6fc4e8",
+    "git_blob": "3e6f692429c0745c40068bf909363ce1d301112f",
+    "upload_size": 5919,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/sweep_4b/head50_A.xml",
+    "remote_path": "models/sweep_4b/head50_A.xml",
+    "source_sha256": "6134493735c90d9e2f844165022a23772bbb7f0addde100529829c164df5ab21",
+    "sha256": "6134493735c90d9e2f844165022a23772bbb7f0addde100529829c164df5ab21",
+    "git_blob": "5921d904e1375c7c0b91bb07ce7b98d73adf6d2c",
+    "upload_size": 5916,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/sweep_4b/head50_B.xml",
+    "remote_path": "models/sweep_4b/head50_B.xml",
+    "source_sha256": "e7610c9b22bbb8ab8771d5f6dce925d6a5ee6331eb37981a002c0e0d2b8de2a9",
+    "sha256": "e7610c9b22bbb8ab8771d5f6dce925d6a5ee6331eb37981a002c0e0d2b8de2a9",
+    "git_blob": "230e149466efe2ede68091f9a28b44984683acc3",
+    "upload_size": 6191,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/sweep_4b/head60_A.xml",
+    "remote_path": "models/sweep_4b/head60_A.xml",
+    "source_sha256": "6f8cd6e18ca05cde48c08366d25921ae912aec3b447b86c20a5f79e435c84282",
+    "sha256": "6f8cd6e18ca05cde48c08366d25921ae912aec3b447b86c20a5f79e435c84282",
+    "git_blob": "0477cb474827ee7261df8992bcc4d1b6868176d2",
+    "upload_size": 5914,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/sweep_4b/head60_B.xml",
+    "remote_path": "models/sweep_4b/head60_B.xml",
+    "source_sha256": "6c6e771e507b6f43047c2937702044b29f51e8de1c0e1682c8f1f6b82a67f48b",
+    "sha256": "6c6e771e507b6f43047c2937702044b29f51e8de1c0e1682c8f1f6b82a67f48b",
+    "git_blob": "bc897228970935accd9c269d9793ecd7faca2672",
+    "upload_size": 6189,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/sweep_4b/legthick15_A.xml",
+    "remote_path": "models/sweep_4b/legthick15_A.xml",
+    "source_sha256": "9ae75aa943236aa7554f08d92f42b83dcbae352bc0dbbd83ec4be0e5fbc03a89",
+    "sha256": "9ae75aa943236aa7554f08d92f42b83dcbae352bc0dbbd83ec4be0e5fbc03a89",
+    "git_blob": "527bbf51bfcd7844d96f65caf4209da445d10766",
+    "upload_size": 5915,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "models/sweep_4b/legthick35_A.xml",
+    "remote_path": "models/sweep_4b/legthick35_A.xml",
+    "source_sha256": "caeaec80e378ca69f32fc26df9ea56f34222bbf5c256c0b924f50c8a59ad3ccc",
+    "sha256": "caeaec80e378ca69f32fc26df9ea56f34222bbf5c256c0b924f50c8a59ad3ccc",
+    "git_blob": "f447ab4ea7ae98c8faf4d39b8e3d7afc91f71ea1",
+    "upload_size": 5915,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "references/handmove_test.npz",
+    "remote_path": "references/handmove_test.npz",
+    "source_sha256": "e9cf8298e6f87b6f1b17baba41ef9cd66e6bdebbd7282ca90cd9e80acd108a09",
+    "sha256": "e9cf8298e6f87b6f1b17baba41ef9cd66e6bdebbd7282ca90cd9e80acd108a09",
+    "git_blob": "2a54838206bfaf49beb56c8dcca56913d3fdbf1b",
+    "upload_size": 150988,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "references/handmove_test_v2.npz",
+    "remote_path": "references/handmove_test_v2.npz",
+    "source_sha256": "6e63f949b25e8bffe0140cee32caea0a20023db86a41e6fd9001a3787ec9d43f",
+    "sha256": "6e63f949b25e8bffe0140cee32caea0a20023db86a41e6fd9001a3787ec9d43f",
+    "git_blob": "f7d5e688299e487517a901af082296a402e8ec8d",
+    "upload_size": 150988,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "references/npz_test.npz",
+    "remote_path": "references/npz_test.npz",
+    "source_sha256": "cb0dcfd7e4d195b2c991d5cc5321376ee4c47f34ce424d8110f959b8da19a3db",
+    "sha256": "cb0dcfd7e4d195b2c991d5cc5321376ee4c47f34ce424d8110f959b8da19a3db",
+    "git_blob": "978e97080c9d31e3c59c7201fc3e994f54633c0f",
+    "upload_size": 97868,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "references/npz_test_with_arms_viz.npz",
+    "remote_path": "references/npz_test_with_arms_viz.npz",
+    "source_sha256": "dc19d41f50056e9206eeb5f605a033e2627d6db7297112d1f84b758eb61eb9c3",
+    "sha256": "dc19d41f50056e9206eeb5f605a033e2627d6db7297112d1f84b758eb61eb9c3",
+    "git_blob": "3980a5008e57a807e4051bdbf7d17b561edbd478",
+    "upload_size": 76622,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "references/stage1_walk.npz",
+    "remote_path": "references/stage1_walk.npz",
+    "source_sha256": "c1e6fc0cf16458839248cd4abcb536d9d3925b52ea966763754fd7d2fdf6dfb6",
+    "sha256": "c1e6fc0cf16458839248cd4abcb536d9d3925b52ea966763754fd7d2fdf6dfb6",
+    "git_blob": "86c9ad935c3f1bcd98c4434dede11ee64786c22d",
+    "upload_size": 234992,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "scripts/check_support_polygon.py",
+    "remote_path": "scripts/check_support_polygon.py",
+    "source_sha256": "da60f89ece733000fe085e6c76c796e3e455aa67794daabaa97132c6781f09d4",
+    "sha256": "da60f89ece733000fe085e6c76c796e3e455aa67794daabaa97132c6781f09d4",
+    "git_blob": "89b34f329bbc2e9c86e0cc18c242d4c611c6c8a4",
+    "upload_size": 4392,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "scripts/colab_launch_stage0.py",
+    "remote_path": "scripts/colab_launch_stage0.py",
+    "source_sha256": "7d9b8d3f0078b1b63adcfb49f0efaeb6141992033db5c5c774237ed08e9d7487",
+    "sha256": "7d9b8d3f0078b1b63adcfb49f0efaeb6141992033db5c5c774237ed08e9d7487",
+    "git_blob": "e7e18fa62d0204b9a107780f95e45d75b8071308",
+    "upload_size": 1822,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "scripts/colab_sync_checkpoints.sh",
+    "remote_path": "scripts/colab_sync_checkpoints.sh",
+    "source_sha256": "7f69247b74e92fc0a63210fc6e3314b5dae13311c35d95de736185ab54510940",
+    "sha256": "7f69247b74e92fc0a63210fc6e3314b5dae13311c35d95de736185ab54510940",
+    "git_blob": "433c8494fb629c739a8a5471381ddead58fb20bb",
+    "upload_size": 1280,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "scripts/convert_csv_to_npz.py",
+    "remote_path": "scripts/convert_csv_to_npz.py",
+    "source_sha256": "ed548830dd4ee9c5b8d61087c86fd976946588e0ff442f1be9b24f82d408bc5d",
+    "sha256": "ed548830dd4ee9c5b8d61087c86fd976946588e0ff442f1be9b24f82d408bc5d",
+    "git_blob": "e99ac5b16e71f6dbe591f8b3529fca906f543e88",
+    "upload_size": 14714,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "scripts/convert_handmove_to_npz.py",
+    "remote_path": "scripts/convert_handmove_to_npz.py",
+    "source_sha256": "670ca27f76987605c184fe27f7536b0b74a0c7c967e54a65ec35567e14cbe293",
+    "sha256": "670ca27f76987605c184fe27f7536b0b74a0c7c967e54a65ec35567e14cbe293",
+    "git_blob": "6a8bd24185798c37209cd3252fa3b004c202f75b",
+    "upload_size": 5610,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "scripts/convert_handmove_to_npz_v2.py",
+    "remote_path": "scripts/convert_handmove_to_npz_v2.py",
+    "source_sha256": "316e07a6c177e163e4832d9753ca5cb50c91f5d420cd8139d07d6548716402df",
+    "sha256": "316e07a6c177e163e4832d9753ca5cb50c91f5d420cd8139d07d6548716402df",
+    "git_blob": "e67b8593cefcb1bdf43364e16845356d836c61bb",
+    "upload_size": 8900,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "scripts/gen_candidate_mjcf.py",
+    "remote_path": "scripts/gen_candidate_mjcf.py",
+    "source_sha256": "9bcdf1fd840c1816225148c90eff8e839c8b1d54d4254b4bb5feefdf3fa02370",
+    "sha256": "9bcdf1fd840c1816225148c90eff8e839c8b1d54d4254b4bb5feefdf3fa02370",
+    "git_blob": "c552f906c72359f3baaf2d65fba4ea0289038398",
+    "upload_size": 15209,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "scripts/measure_stage0.py",
+    "remote_path": "scripts/measure_stage0.py",
+    "source_sha256": "67760c07bd52764e5bd2a38abcc14891f8ca85886658e2a8be5a6a355ae681b9",
+    "sha256": "67760c07bd52764e5bd2a38abcc14891f8ca85886658e2a8be5a6a355ae681b9",
+    "git_blob": "f15bf593dd37eeccee74ec6a23dfebb6832508e2",
+    "upload_size": 13874,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "scripts/record_policy.py",
+    "remote_path": "scripts/record_policy.py",
+    "source_sha256": "df6d82f6b1e26f66a149d2bf40ddcea8fa2c194811eca8f15a7621f44059b86a",
+    "sha256": "df6d82f6b1e26f66a149d2bf40ddcea8fa2c194811eca8f15a7621f44059b86a",
+    "git_blob": "6b9c1be8a3da5d408ee15cafb7183364dd2647ae",
+    "upload_size": 4476,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "scripts/render_mimic_policy.py",
+    "remote_path": "scripts/render_mimic_policy.py",
+    "source_sha256": "201c7a4179b96d22007f381bebb9cfebbb9c98326d8e35514ab888290bc28573",
+    "sha256": "201c7a4179b96d22007f381bebb9cfebbb9c98326d8e35514ab888290bc28573",
+    "git_blob": "ff4b22db104e64cfa1fffe636a383a296dbe7b14",
+    "upload_size": 4226,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "scripts/render_policy.py",
+    "remote_path": "scripts/render_policy.py",
+    "source_sha256": "2a0186735b45fdbba7e4acd2c225b9fd3a8b73ecbbb14fa02fa1fe8fb50cbf39",
+    "sha256": "2a0186735b45fdbba7e4acd2c225b9fd3a8b73ecbbb14fa02fa1fe8fb50cbf39",
+    "git_blob": "fa39967d0cb6bee80c08a884a44a1e9ba0a00b7b",
+    "upload_size": 2461,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "scripts/render_reference_kinematic.py",
+    "remote_path": "scripts/render_reference_kinematic.py",
+    "source_sha256": "dd00f19d208fded259492b9f81f7225a8bf1ce62a3b2ac4a02be0a7631590f40",
+    "sha256": "dd00f19d208fded259492b9f81f7225a8bf1ce62a3b2ac4a02be0a7631590f40",
+    "git_blob": "7de3e785867d28a9bf4544610d922b63c40d9e40",
+    "upload_size": 2444,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "scripts/smoke_test_stage1.py",
+    "remote_path": "scripts/smoke_test_stage1.py",
+    "source_sha256": "c47660e7878e1388539af58b712902baee67b2c2f277fc1f2458129c3b58b70b",
+    "sha256": "c47660e7878e1388539af58b712902baee67b2c2f277fc1f2458129c3b58b70b",
+    "git_blob": "ecab75625e6036ee33151bc4d40894cf84e948c9",
+    "upload_size": 7794,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "scripts/train_stage1.py",
+    "remote_path": "scripts/train_stage1.py",
+    "source_sha256": "06873736e18e212a5c1d292f757b6b21c711c7d9ab85c9fdcce6883cc3184df5",
+    "sha256": "06873736e18e212a5c1d292f757b6b21c711c7d9ab85c9fdcce6883cc3184df5",
+    "git_blob": "982bf4c9273cf6182486f774b7f20f300baab0e6",
+    "upload_size": 4878,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "scripts/train_stage1_local.py",
+    "remote_path": "scripts/train_stage1_local.py",
+    "source_sha256": "b650e9751d126c8d2da24bf429ed237d6e64b7be732b2126a1f28edb6400efc1",
+    "sha256": "b650e9751d126c8d2da24bf429ed237d6e64b7be732b2126a1f28edb6400efc1",
+    "git_blob": "f2765086a1c595eecb909f7aa1f2583e45f2b982",
+    "upload_size": 6622,
+    "sanitized": []
+  },
+  {
+    "project": "3robot_project",
+    "path": "scripts/train_stage2_local.py",
+    "remote_path": "scripts/train_stage2_local.py",
+    "source_sha256": "8c82b595e1ce529632c9b47822f38bd538efd14959f3b58b2dae6614e4479d6a",
+    "sha256": "8c82b595e1ce529632c9b47822f38bd538efd14959f3b58b2dae6614e4479d6a",
+    "git_blob": "83cb3446cbc42d752e28a997dd686f5516f2564c",
+    "upload_size": 8127,
+    "sanitized": []
+  }
+]
